@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ta">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Sysdev Composition</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="index.css">
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="16"
+      data-width="1080"
+      data-height="1920"
+    >
+      <!-- Background Blobs -->
+      <div class="bg-blob blob-1"></div>
+      <div class="bg-blob blob-2"></div>
+      <div class="bg-blob blob-3"></div>
+
+      <!-- Main Composition Host -->
+      <div 
+        id="automation-scene" 
+        data-composition-src="compositions/automation_stack.html"
+        data-composition-id="automation-stack"
+        data-start="11"
+        data-track-index="10"
+      ></div>
+
+      <!-- Step 1: எப்படி? -->
+      <div id="step1" class="clip tamil-text" data-start="0" data-duration="1" data-track-index="1">
+        எப்படி?
+      </div>
+
+      <!-- Step 2: உங்க WORK-அ -->
+      <div id="step2" class="clip tamil-text" data-start="1" data-duration="1.5" data-track-index="2">
+        <span>உங்க <span class="cyan bold">WORK</span>-அ</span>
+      </div>
+
+      <!-- Step 3: AUTOMATE -->
+      <div id="step3" class="clip heavy" data-start="2.5" data-duration="1.5" data-track-index="3" data-text="AUTOMATE">
+        AUTOMATE
+      </div>
+
+      <!-- Step 4: செய்றீங்கன்னு... -->
+      <div id="step4" class="clip tamil-text" data-start="4" data-duration="1.5" data-track-index="4">
+        செய்றீங்கன்னு...
+      </div>
+
+      <!-- Step 5: உங்க Friends -->
+      <div id="step5" class="clip tamil-text" data-start="5.5" data-duration="1.5" data-track-index="5">
+        <span>உங்க <span class="accent-yellow bold">Friends</span></span>
+      </div>
+
+      <!-- Step 6: இல்லென்ன -->
+      <div id="step6" class="clip tamil-text" data-start="7" data-duration="1" data-track-index="6">
+        இல்லென்ன
+      </div>
+
+      <!-- Step 7: Colleagues -->
+      <div id="step7" class="clip bold" data-start="8" data-duration="1.5" data-track-index="7">
+        Colleagues
+      </div>
+
+      <!-- Step 8: கிட்ட கேட்டுருக்கீங்களா? -->
+      <div id="step8" class="clip tamil-text" data-start="9.5" data-duration="1.5" data-track-index="8">
+        <div>
+          கிட்ட கேட்டுருக்கீங்களா?
+          <span class="question-mark">?</span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Background Animations
+      tl.to(".blob-1", { x: 400, y: 300, duration: 16, ease: "sine.inOut" }, 0);
+      tl.to(".blob-2", { x: -300, y: -500, duration: 16, ease: "sine.inOut" }, 0);
+      tl.to(".blob-3", { scale: 1.5, opacity: 0.2, duration: 8, yoyo: true, repeat: 1, ease: "sine.inOut" }, 0);
+
+      // Step 1: Scale Up + Fade In (0.0 - 1.0)
+      tl.fromTo("#step1", 
+        { scale: 0.5, opacity: 0 }, 
+        { scale: 1.2, opacity: 1, duration: 0.5, ease: "back.out(1.7)" }, 
+        0
+      );
+      tl.to("#step1", { opacity: 0, duration: 0.2 }, 0.8);
+      tl.set("#step1", { opacity: 0 }, 1.0);
+
+      // Step 2: Slide Left to Center (1.0 - 2.5)
+      tl.fromTo("#step2", 
+        { x: 1000, opacity: 0 }, 
+        { x: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 
+        1
+      );
+      tl.to("#step2", { x: -50, opacity: 0, duration: 0.3 }, 2.2);
+      tl.set("#step2", { opacity: 0 }, 2.5);
+
+      // Step 3: Glitch Effect / Flicker (2.5 - 4.0)
+      tl.fromTo("#step3", 
+        { opacity: 0 }, 
+        { opacity: 1, duration: 0.1 }, 
+        2.5
+      );
+      // Simulating flicker/glitch with repeated steps
+      [2.6, 2.8, 3.0, 3.2, 3.4].forEach(t => {
+        tl.to("#step3", { opacity: 0.5, x: 10, duration: 0.05, yoyo: true, repeat: 1 }, t);
+      });
+      tl.to("#step3", { opacity: 0, scale: 1.5, duration: 0.3 }, 3.7);
+      tl.set("#step3", { opacity: 0 }, 4.0);
+
+      // Step 4: Typewriter effect (4.0 - 5.5)
+      tl.from("#step4", { opacity: 0, duration: 0.5 }, 4);
+      tl.from("#step4", { clipPath: "inset(0 100% 0 0)", duration: 1, ease: "steps(12)" }, 4);
+      tl.to("#step4", { opacity: 0, duration: 0.3 }, 5.2);
+      tl.set("#step4", { opacity: 0 }, 5.5);
+
+      // Step 5: Float Up (5.5 - 7.0)
+      tl.fromTo("#step5", 
+        { y: 200, opacity: 0 }, 
+        { y: 0, opacity: 1, duration: 0.8, ease: "elastic.out(1, 0.5)" }, 
+        5.5
+      );
+      // Removed infinite repeat
+      tl.to("#step5", { y: -20, duration: 0.5, yoyo: true, repeat: 1, ease: "sine.inOut" }, 6.3);
+      tl.to("#step5", { opacity: 0, duration: 0.2 }, 6.8);
+      tl.set("#step5", { opacity: 0 }, 7.0);
+
+      // Step 6: Cross-fade (7.0 - 8.0)
+      tl.fromTo("#step6", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 7);
+      tl.to("#step6", { opacity: 0, duration: 0.4 }, 7.6);
+      tl.set("#step6", { opacity: 0 }, 8.0);
+
+      // Step 7: Stretch + Snap (8.0 - 9.5)
+      tl.fromTo("#step7", 
+        { scaleX: 0, opacity: 0 }, 
+        { scaleX: 1, opacity: 1, duration: 0.5, ease: "expo.out" }, 
+        8
+      );
+      tl.to("#step7", { scaleY: 1.2, duration: 0.2, yoyo: true, repeat: 1 }, 8.5);
+      tl.to("#step7", { opacity: 0, scale: 0.8, duration: 0.3 }, 9.2);
+      tl.set("#step7", { opacity: 0 }, 9.5);
+
+      // Step 8: Bounce in (9.5 - 11.0)
+      tl.fromTo("#step8", 
+        { scale: 0, opacity: 0 }, 
+        { scale: 1, opacity: 1, duration: 0.8, ease: "bounce.out" }, 
+        9.5
+      );
+      tl.fromTo(".question-mark", 
+        { scale: 0, rotate: -45 }, 
+        { scale: 1.5, rotate: 0, duration: 0.5, ease: "back.out(2)" }, 
+        10
+      );
+      tl.set("#step8", { opacity: 0 }, 11.0);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
