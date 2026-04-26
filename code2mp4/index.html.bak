@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Python Logic Narrative</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/TextPlugin.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/MotionPathPlugin.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #030305;
+            --accent-primary: #7c4dff;
+            --accent-secondary: #00e5ff;
+            --error-color: #ff5555;
+            --disk-color: #ffd740;
+            --ram-color: #69f0ae;
+            --code-bg: rgba(20, 20, 30, 0.95);
+            --text-main: #e0e0e6;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { 
+            width: 1080px; height: 1920px; 
+            background: var(--bg-color); 
+            color: var(--text-main); 
+            font-family: 'Outfit', sans-serif; 
+            overflow: hidden; 
+        }
+
+        #root { 
+            width: 1080px; height: 1920px; 
+            position: relative; 
+            background: radial-gradient(circle at 50% 50%, #121225 0%, #030305 100%);
+        }
+
+        /* Narrative Components */
+        .component {
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+
+        .component span { margin-top: 15px; font-size: 24px; font-weight: 600; color: rgba(255,255,255,0.6); }
+        .icon { width: 80px; height: 80px; fill: var(--text-main); }
+
+        /* Component Positions */
+        #comp-disk { top: 350px; left: 750px; border-color: var(--disk-color); }
+        #comp-python { top: 850px; left: 450px; border-color: var(--accent-primary); width: 220px; height: 220px; }
+        #comp-ram { top: 350px; left: 150px; border-color: var(--ram-color); }
+        #comp-console { bottom: 150px; left: 50%; transform: translateX(-50%); width: 900px; height: 300px; }
+
+        /* Code Editor (Floating) */
+        .editor {
+            position: absolute;
+            top: 1150px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 900px;
+            background: var(--code-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 40px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 32px;
+            line-height: 1.6;
+            z-index: 20;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+        }
+
+        .line { opacity: 0.3; transition: opacity 0.3s, background 0.3s; padding: 0 10px; border-radius: 6px; }
+        .line.active { opacity: 1; background: rgba(124, 77, 255, 0.2); }
+        .line.error { background: rgba(255, 85, 85, 0.3); opacity: 1; }
+        
+        .kw { color: #ff79c6; }
+        .str { color: #f1fa8c; }
+        .fn { color: #50fa7b; }
+
+        /* SVG Connections */
+        #svg-layer {
+            position: absolute;
+            top: 0; left: 0; width: 1080px; height: 1920px;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .connection {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.05);
+            stroke-width: 4;
+            stroke-linecap: round;
+        }
+
+        .data-packet {
+            width: 30px;
+            height: 30px;
+            background: var(--accent-secondary);
+            border-radius: 8px;
+            position: absolute;
+            opacity: 0;
+            z-index: 15;
+            box-shadow: 0 0 20px var(--accent-secondary);
+        }
+
+        /* Status Labels */
+        .status-label {
+            position: absolute;
+            top: 100px;
+            width: 100%;
+            text-align: center;
+            font-size: 56px;
+            font-weight: 800;
+            color: var(--accent-secondary);
+            opacity: 0;
+        }
+
+        .scenario-marker {
+            position: absolute;
+            top: 180px;
+            width: 100%;
+            text-align: center;
+            font-size: 32px;
+            color: rgba(255,255,255,0.4);
+            font-style: italic;
+            opacity: 0;
+        }
+
+        .clip { }
+    </style>
+</head>
+<body>
+    <div id="root" 
+         data-composition-id="code2mp4" 
+         data-start="0" 
+         data-duration="20" 
+         data-width="1080" 
+         data-height="1920">
+
+        <div id="status" class="status-label clip" data-start="0" data-duration="20" data-track-index="0">SUCCESS PATH</div>
+        <div id="scenario" class="scenario-marker clip" data-start="0" data-duration="20" data-track-index="1">Scenario 1: example.txt exists</div>
+
+        <!-- System Components -->
+        <div id="comp-disk" class="component clip" data-start="0" data-duration="20" data-track-index="2">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M6,2H18A2,2 0 0,1 20,4V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2M12,4A6,6 0 0,0 6,10C6,13.31 8.69,16 12.1,16L11.22,13.77C10.12,13.35 9,12.28 9,11A3,3 0 0,1 12,8A3,3 0 0,1 15,11C15,12.28 13.88,13.35 12.78,13.77L11.9,16C15.31,16 18,13.31 18,10A6,6 0 0,0 12,4M12,18A1,1 0 0,0 11,19A1,1 0 0,0 12,20A1,1 0 0,0 13,19A1,1 0 0,0 12,18Z"/></svg>
+            <span>DISK</span>
+        </div>
+
+        <div id="comp-python" class="component clip" data-start="0" data-duration="20" data-track-index="3">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M15,9V11H9V9H15M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M12,6A6,6 0 0,1 18,12A6,6 0 0,1 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6M12,8A4,4 0 0,0 8,12A4,4 0 0,0 12,16A4,4 0 0,0 16,12A4,4 0 0,0 12,8Z"/></svg>
+            <span>PYTHON 3.x</span>
+        </div>
+
+        <div id="comp-ram" class="component clip" data-start="0" data-duration="20" data-track-index="4">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M2,7V9H4V7H2M2,11V13H4V11H2M2,15V17H4V15H2M20,7V9H22V7H20M20,11V13H22V11H20M20,15V17H22V15H20M6,5V19H18V5H6M8,7H16V11H8V7M8,13H16V17H8V13Z"/></svg>
+            <span>RAM</span>
+        </div>
+
+        <!-- SVG Connections -->
+        <svg id="svg-layer" viewBox="0 0 1080 1920">
+            <!-- Disk to Python -->
+            <path id="path-disk-py" class="connection" d="M 840 530 Q 840 960 670 960" />
+            <!-- Python to RAM -->
+            <path id="path-py-ram" class="connection" d="M 450 960 Q 240 960 240 530" />
+            <!-- Python to Console -->
+            <path id="path-py-console" class="connection" d="M 560 1070 L 560 1470" />
+        </svg>
+
+        <div id="packet" class="data-packet"></div>
+
+        <!-- Console -->
+        <div id="comp-console" class="component clip" data-start="0" data-duration="20" data-track-index="5">
+            <div style="width: 100%; height: 100%; padding: 30px; font-family: 'JetBrains Mono'; font-size: 26px; text-align: left;">
+                <span style="color: var(--ram-color)">$ console_output</span><br><br>
+                <div id="console-text"></div>
+            </div>
+        </div>
+
+        <!-- Code Editor -->
+        <div class="editor clip" data-start="0" data-duration="20" data-track-index="6">
+            <div class="line" id="l1"><span class="kw">try</span>:</div>
+            <div class="line" id="l2">    <span class="kw">with</span> <span class="fn">open</span>(<span class="str">'example.txt'</span>, <span class="str">'r'</span>) <span class="kw">as</span> file:</div>
+            <div class="line" id="l3">        <span class="fn">print</span>(file.<span class="fn">read</span>())</div>
+            <div class="line" id="l4"><span class="kw">except</span> <span class="fn">FileNotFoundError</span>:</div>
+            <div class="line" id="l5">    <span class="fn">print</span>(<span class="str">"Error: File not found"</span>)</div>
+        </div>
+    </div>
+
+    <script>
+        gsap.registerPlugin(TextPlugin, MotionPathPlugin);
+
+        window.__timelines = window.__timelines || {};
+        const tl = gsap.timeline({ paused: true });
+
+        // --- SCENARIO 1: SUCCESS (0-10s) ---
+        
+        tl.to("#status", { opacity: 1, duration: 1 }, 0.5);
+        tl.to("#scenario", { opacity: 1, duration: 1 }, 0.5);
+
+        // Step 1: Python starts try
+        tl.to("#l1", { className: "line active", duration: 0.3 }, 1.5);
+        tl.from("#comp-python", { scale: 1.1, borderColor: "#fff", duration: 0.5, yoyo: true, repeat: 1 }, 1.5);
+
+        // Step 2: Open file (Python -> Disk)
+        tl.to("#l2", { className: "line active", duration: 0.3 }, 2.5);
+        tl.set("#packet", { opacity: 1, backgroundColor: "#7c4dff" }, 2.6);
+        tl.to("#packet", {
+            motionPath: { path: "#path-disk-py", align: "#path-disk-py", alignOrigin: [0.5, 0.5], start: 1, end: 0 },
+            duration: 1, ease: "power1.inOut"
+        }, 2.6); // Python sends request to Disk
+
+        // Step 3: Disk finds file and sends data to RAM via Python
+        tl.to("#comp-disk", { backgroundColor: "rgba(255, 215, 64, 0.1)", duration: 0.5 }, 3.5);
+        tl.to("#packet", { 
+            backgroundColor: "#00e5ff", 
+            motionPath: { path: "#path-disk-py", align: "#path-disk-py", alignOrigin: [0.5, 0.5], start: 0, end: 1 },
+            duration: 1, ease: "power1.inOut"
+        }, 4.0); // Disk -> Python
+        
+        // Step 4: Python stores in RAM (read)
+        tl.to("#l3", { className: "line active", duration: 0.3 }, 5.0);
+        tl.to("#packet", {
+            motionPath: { path: "#path-py-ram", align: "#path-py-ram", alignOrigin: [0.5, 0.5], start: 0, end: 1 },
+            duration: 1, ease: "power1.inOut"
+        }, 5.5); // Python -> RAM
+        tl.to("#comp-ram", { backgroundColor: "rgba(105, 240, 174, 0.1)", duration: 0.5 }, 6.5);
+
+        // Step 5: print (RAM -> Console)
+        tl.to("#packet", {
+            motionPath: { path: "#path-py-console", align: "#path-py-console", alignOrigin: [0.5, 0.5], start: 0, end: 1 },
+            duration: 0.8, ease: "power2.in"
+        }, 7.5); // From Python area to Console
+        tl.to("#console-text", { text: "Hello from example.txt!", duration: 1 }, 8.3);
+        tl.to("#packet", { opacity: 0, duration: 0.2 }, 8.3);
+
+        // Reset for Scenario 2
+        tl.to(["#l1", "#l2", "#l3"], { className: "line", opacity: 0.3, duration: 0.5 }, 10.5);
+        tl.to("#console-text", { text: "", duration: 0.1 }, 10.5);
+
+        // --- SCENARIO 2: ERROR (11-20s) ---
+        
+        tl.to("#status", { text: "EXCEPTION PATH", color: "#ff5555", duration: 0.5 }, 11.0);
+        tl.to("#scenario", { text: "Scenario 2: example.txt is MISSING", duration: 0.5 }, 11.0);
+
+        // Step 1: try
+        tl.to("#l1", { className: "line active", duration: 0.3 }, 12.0);
+
+        // Step 2: with open (Python -> Disk)
+        tl.to("#l2", { className: "line active", duration: 0.3 }, 13.0);
+        tl.set("#packet", { opacity: 1, backgroundColor: "#7c4dff" }, 13.1);
+        tl.to("#packet", {
+            motionPath: { path: "#path-disk-py", align: "#path-disk-py", alignOrigin: [0.5, 0.5], start: 1, end: 0 },
+            duration: 1, ease: "power1.inOut"
+        }, 13.1);
+
+        // Step 3: Disk reports ERROR
+        tl.to("#comp-disk", { borderColor: "#ff5555", duration: 0.3 }, 14.1);
+        tl.to("#packet", { backgroundColor: "#ff5555", scale: 1.5, duration: 0.2 }, 14.1);
+        tl.to("#packet", { opacity: 0, duration: 0.5, scale: 3 }, 14.3); // Error "explosion"
+        
+        // Step 4: Python catches error
+        tl.to("#l2", { className: "line error", duration: 0.2 }, 14.5);
+        tl.to("#l4", { className: "line active", duration: 0.3, color: "#ff5555" }, 15.5);
+        
+        // Step 5: print error
+        tl.to("#l5", { className: "line active", duration: 0.3 }, 16.5);
+        tl.to("#console-text", { text: "Error: File not found", color: "#ff5555", duration: 1 }, 17.0);
+
+        // Ambient background animation
+        tl.to(".component", { y: "+=10", duration: 2, repeat: 10, yoyo: true, ease: "sine.inOut" }, 0);
+
+        window.__timelines["code2mp4"] = tl;
+    </script>
+</body>
+</html>
