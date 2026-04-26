@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Industry Role Migration Map</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Draggable.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-color: #0b1221;
+            --card-bg: rgba(26, 35, 60, 0.8);
+            --border-color: #2a3b5c;
+            --highlight-cyan: #00e5ff;
+            --highlight-orange: #ff6b35;
+            --text-main: #e2e8f0;
+            --text-sub: #94a3b8;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: auto; /* Enable both scrollbars */
+            min-height: 100vh;
+            min-width: 1600px; /* Ensure wide map is accessible */
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            z-index: 10;
+        }
+
+        .map-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+            min-width: 1500px;
+            padding: 2rem;
+            position: relative;
+            z-index: 10;
+            box-sizing: border-box;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            width: 28%;
+            z-index: 2;
+        }
+
+        .center-column {
+            width: 35%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        /* Card Styles */
+        .role-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.2rem;
+            cursor: move; /* Indicate draggable */
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            user-select: none;
+        }
+
+        .role-card h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+            color: #fff;
+        }
+
+        .role-card p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--text-sub);
+        }
+
+        /* Hover Effects */
+        .role-card.pre-2025:hover {
+            border-color: var(--highlight-cyan);
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+            transform: translateX(5px);
+        }
+
+        .role-card.evolved:hover {
+            border-color: var(--highlight-orange);
+            box-shadow: 0 0 15px rgba(255, 107, 53, 0.3);
+            transform: translateX(-5px);
+        }
+
+        /* Central AI Brain */
+        .ai-hub {
+            width: 240px;
+            height: 240px;
+            background: radial-gradient(circle, rgba(0,229,255,0.15) 0%, rgba(11,18,33,0.95) 80%);
+            border: 2px solid var(--highlight-cyan);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 50px rgba(0, 229, 255, 0.4), inset 0 0 30px rgba(0, 229, 255, 0.1);
+            position: relative;
+            cursor: move;
+            z-index: 5;
+        }
+
+        .brain-inner {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .brain-svg {
+            width: 80%;
+            height: 80%;
+            opacity: 0.8;
+        }
+
+        .core-text {
+            position: absolute;
+            font-weight: bold;
+            color: var(--highlight-cyan);
+            letter-spacing: 2px;
+            font-size: 0.9rem;
+            text-shadow: 0 0 10px var(--highlight-cyan);
+            z-index: 6;
+        }
+
+        .brain-part {
+            fill: none;
+            stroke: var(--highlight-cyan);
+            stroke-width: 1.5;
+            stroke-linecap: round;
+        }
+
+        .node-pulse {
+            fill: var(--highlight-cyan);
+        }
+
+        .domain-node {
+            position: absolute;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 107, 53, 0.1);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--highlight-orange);
+            white-space: nowrap;
+            pointer-events: auto;
+            opacity: 1;
+            z-index: 15;
+            cursor: move;
+        }
+
+        /* Icon styling */
+        .icon-box {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            color: var(--highlight-cyan);
+        }
+
+        .evolved .icon-box {
+            color: var(--highlight-orange);
+        }
+
+        /* Flow Labels */
+        .flow-label {
+            position: absolute;
+            font-size: 0.7rem;
+            color: var(--highlight-orange);
+            background: rgba(11, 18, 33, 0.8);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 107, 53, 0.4);
+            pointer-events: none;
+            z-index: 5;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        /* Legend */
+        .legend {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background: rgba(26, 35, 60, 0.9);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .human-dot { background: var(--highlight-cyan); }
+        .ai-dot { background: var(--highlight-orange); }
+
+        .ai-decoration {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            pointer-events: none;
+            width: 100%;
+        }
+
+        .robot-svg, .neural-net-svg {
+            width: 80px;
+            height: 80px;
+            opacity: 0.6;
+            color: var(--highlight-cyan);
+        }
+
+        /* SVG Flow Lines Layer */
+        #connection-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .path-base {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 3;
+        }
+
+        .path-flow-cyan {
+            fill: none;
+            stroke: var(--highlight-cyan);
+            stroke-width: 3;
+            stroke-dasharray: 8 12;
+            opacity: 0.7;
+        }
+
+        .path-flow-orange {
+            fill: none;
+            stroke: var(--highlight-orange);
+            stroke-width: 3;
+            stroke-dasharray: 8 12;
+            opacity: 0.7;
+        }
+
+        /* Modal Styles */
+        #info-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #151e32;
+            border: 1px solid var(--highlight-cyan);
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+            border-radius: 12px;
+            padding: 2rem;
+            width: 400px;
+            z-index: 100;
+        }
+
+        #modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 99;
+            backdrop-filter: blur(3px);
+        }
+
+        .close-btn {
+            float: right;
+            cursor: pointer;
+            color: var(--text-sub);
+            font-weight: bold;
+        }
+        
+        .close-btn:hover { color: #fff; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>THE GREAT RE-BUNDLING</h1>
+        <p style="color: var(--text-sub); letter-spacing: 1px;">INDUSTRY ROLE FALLOUT & MIGRATION MAP (2026 DATA PROJECTION)</p>
+    </header>
+
+    <div id="modal-overlay"></div>
+    <div id="info-modal">
+        <span class="close-btn" onclick="closeModal()">✕</span>
+        <h2 id="modal-title">Role Title</h2>
+        <p id="modal-desc" style="color: var(--text-sub);">Role description...</p>
+        <hr style="border-color: #2a3b5c; margin: 1.5rem 0;">
+        <h4 style="margin-bottom: 0.5rem; color: var(--highlight-cyan);">Key Skills Required</h4>
+        <ul id="modal-skills" style="color: #e2e8f0; font-size: 0.9rem;"></ul>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item"><div class="legend-dot human-dot"></div> Human Task</div>
+        <div class="legend-item"><div class="legend-dot ai-dot"></div> AI-Augmented Task</div>
+    </div>
+
+    <div class="map-container" id="map-container">
+        
+        <svg id="connection-lines" preserveAspectRatio="none">
+            <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" 
+                refX="0" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="rgba(255, 107, 53, 0.6)" />
+                </marker>
+            </defs>
+        </svg>
+
+        <div class="column" id="col-left">
+            <h3 style="text-align: center; color: var(--highlight-cyan);">PRE-2025: TRADITIONAL ROLES</h3>
+            <p style="text-align: center; font-size: 0.7rem; color: var(--text-sub); margin-top: -1rem; margin-bottom: 2rem;">(INPUT: LEGACY FUNCTIONS)</p>
+            
+            <div class="role-card pre-2025" id="tech-writer" onclick="openModal('Technical Writer', 'Manual content creation and syntax-focused formatting.', ['Grammar', 'Formatting', 'Software usage'])">
+                <div class="icon-box"><i data-lucide="keyboard"></i></div>
+                <h3>Technical Writer</h3>
+                <p>Manual Content Creator • Formatting</p>
+            </div>
+            
+            <div class="role-card pre-2025" id="soft-eng" onclick="openModal('Software Engineer', 'Syntax-focused development and boilerplate generation.', ['Programming languages', 'Algorithm design', 'Debugging'])">
+                <div class="icon-box"><i data-lucide="cpu"></i></div>
+                <h3>Software Engineer</h3>
+                <p>Boilerplate Generation • Syntax-Focused</p>
+            </div>
+            
+            <div class="role-card pre-2025" id="bus-analyst" onclick="openModal('Business Analyst', 'Manual requirements gathering and documentation.', ['Stakeholder interviews', 'Process mapping', 'UML'])">
+                <div class="icon-box"><i data-lucide="database"></i></div>
+                <h3>Business Analyst</h3>
+                <p>Requirements Gathering • Documentation</p>
+            </div>
+
+            <div class="role-card pre-2025" id="proj-mgr" onclick="openModal('Project & Program Manager', 'Schedule & Budget Management, Manual Status Tracking.', ['Resource Coordination', 'Scheduling', 'Budgeting'])">
+                <div class="icon-box"><i data-lucide="clipboard-check"></i></div>
+                <h3>Project & Program Manager</h3>
+                <p>Schedule & Budget • Status Tracking</p>
+            </div>
+        </div>
+
+        <div class="center-column" id="col-center">
+            <div style="margin-bottom: 2rem;">
+                <h3 style="color: var(--text-main);">AI AUTOMATION WAVE <br> & "RE-BUNDLING"</h3>
+                <p style="color: var(--text-sub); font-size: 0.8rem;">AI MODELS ASSUME <span style="color: var(--highlight-orange);">~80%</span> <br> OF ROUTINE DRAFTING/CODING</p>
+            </div>
+
+            <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
+                <i data-lucide="bot" class="robot-svg"></i>
+                <i data-lucide="database" class="robot-svg"></i>
+            </div>
+
+            <div class="ai-hub" id="ai-node">
+                <div class="brain-inner">
+                    <svg class="brain-svg" viewBox="0 0 100 100">
+                        <!-- Brain shape/structure -->
+                        <path class="brain-part" d="M30,50 Q50,20 70,50 T30,50" />
+                        <path class="brain-part" d="M20,40 Q50,10 80,40" />
+                        <path class="brain-part" d="M20,60 Q50,90 80,60" />
+                        <circle class="node-pulse" cx="50" cy="50" r="3" />
+                        <circle class="node-pulse" cx="30" cy="40" r="2" />
+                        <circle class="node-pulse" cx="70" cy="40" r="2" />
+                    </svg>
+                </div>
+                <div class="core-text">NEURAL HUB</div>
+            </div>
+            
+            <div style="margin-top: 2rem;">
+                <p style="color: var(--highlight-cyan); font-weight: bold;">UNLOCKING HUMAN POTENTIAL</p>
+                <p style="color: var(--text-sub); font-size: 0.75rem;">FOR HIGH-VALUE TASKS</p>
+            </div>
+        </div>
+
+        <div class="column" id="col-right">
+            <h3 style="text-align: center; color: var(--highlight-orange); margin-bottom: 0;">2026: EVOLVED ROLES</h3>
+            <p style="text-align: center; font-size: 0.7rem; color: var(--text-sub); margin-bottom: 1rem;">(OUTPUT: NEW SPECIALIZATIONS)</p>
+            
+            <p style="text-align: right; color: var(--highlight-orange); font-size: 0.8rem; font-weight: bold; margin-bottom: 1rem; padding-right: 1rem;">TECHNICAL WRITER <i data-lucide="search" style="width: 14px; vertical-align: middle;"></i></p>
+
+            <div class="role-card evolved" id="val-lead" onclick="openModal('Validation & Governance Lead', 'Verifying safety instructions and auditing AI drafts for hallucinations.', ['Safety Auditing', 'Regulatory Compliance', 'UI Label Accuracy'])">
+                <div class="icon-box"><i data-lucide="shield-check"></i></div>
+                <h3>Validation & Governance Lead</h3>
+                <p>Safety Auditing • AI Draft Verification</p>
+            </div>
+            
+            <div class="role-card evolved" id="content-ops" onclick="openModal('Content Ops Engineer', 'Managing Docs-as-Code pipelines and AI RAG connectors.', ['Git / CI/CD', 'RAG Pipeline Management', 'Scalability'])">
+                <div class="icon-box"><i data-lucide="terminal"></i></div>
+                <h3>Content Ops Engineer</h3>
+                <p>Docs-as-Code • RAG Pipelines</p>
+            </div>
+            
+            <div class="role-card evolved" id="info-arch" onclick="openModal('Information Architect', 'Designing structural content strategy and chatbot interactions.', ['Taxonomy', 'Metadata structuring', 'AI Strategist'])">
+                <div class="icon-box"><i data-lucide="binary"></i></div>
+                <h3>Information Architect</h3>
+                <p>AI Strategist • Interaction Structuring</p>
+            </div>
+
+            <div class="role-card evolved" id="sys-design" onclick="openModal('AI Workflow Architect', 'Systems designer ensuring architectural integrity and security of agent swarms.', ['Multi-agent orchestration', 'Security Auditing', 'Systems Designer'])">
+                <div class="icon-box"><i data-lucide="layers"></i></div>
+                <h3>AI Workflow Architect</h3>
+                <p>Systems Designer • Security Auditing</p>
+            </div>
+
+            <div class="role-card evolved" id="strat-ops" onclick="openModal('Strategic Operations Lead', 'AI-Augmented Strategic Alignment, Governance & Compliance.', ['Macro-System Efficiency', 'Compliance', 'Strategy'])">
+                <div class="icon-box"><i data-lucide="globe"></i></div>
+                <h3>Strategic Operations Lead</h3>
+                <p>Strategic Alignment • Governance</p>
+            </div>
+
+            <div class="role-card evolved" id="value-stream" onclick="openModal('Value Stream Orchestrator', 'Cross-Functional Integration, AI Bot Integration & Management.', ['Performance Analytics', 'Integration', 'Management'])">
+                <div class="icon-box"><i data-lucide="user-plus"></i></div>
+                <h3>Value Stream Orchestrator</h3>
+                <p>Bot Integration • Performance Analytics</p>
+            </div>
+        </div>
+
+        <!-- Flow Labels -->
+        <div id="label-pipeline" class="flow-label">Code-led content pipelines</div>
+        <div id="label-prompt" class="flow-label">Programmatic Prompting</div>
+        <div id="label-audit" class="flow-label">Technical Data Auditing</div>
+
+        <!-- Divergence Nodes -->
+        <div id="domain-cloud" class="domain-node">Cloud Architecture</div>
+        <div id="domain-security" class="domain-node">Cybersecurity</div>
+        <div id="domain-ai" class="domain-node">ML Engineering</div>
+        <div id="domain-product" class="domain-node">Product Strategy</div>
+
+        <div style="width: 100%; text-align: center; color: var(--text-sub); font-size: 0.7rem; margin-top: 4rem; padding-bottom: 2rem;">
+            *This map visualizes how core roles are being re-defined, moving from creation to validation, governance, and architectural design.
+        </div>
+    </div>
+
+    <script>
+        // Modal Logic
+        function openModal(title, desc, skills) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-desc').innerText = desc;
+            
+            const skillsList = document.getElementById('modal-skills');
+            skillsList.innerHTML = '';
+            skills.forEach(skill => {
+                let li = document.createElement('li');
+                li.innerText = skill;
+                skillsList.appendChild(li);
+            });
+
+            document.getElementById('info-modal').style.display = 'block';
+            document.getElementById('modal-overlay').style.display = 'block';
+            
+            // Simple GSAP popup animation
+            gsap.fromTo("#info-modal", {y: -20, opacity: 0}, {y: 0, opacity: 1, duration: 0.3});
+        }
+
+        function closeModal() {
+            document.getElementById('info-modal').style.display = 'none';
+            document.getElementById('modal-overlay').style.display = 'none';
+        }
+        document.getElementById('modal-overlay').addEventListener('click', closeModal);
+
+        // GSAP SVG Drawing Logic
+        const svgCanvas = document.getElementById('connection-lines');
+        
+        function drawLine(startElemId, endElemId, colorClass, curveOffset) {
+            const start = document.getElementById(startElemId);
+            const end = document.getElementById(endElemId);
+            const container = document.getElementById('map-container');
+
+            if(!start || !end) return;
+
+            // Get coordinates relative to container
+            const containerRect = container.getBoundingClientRect();
+            const startRect = start.getBoundingClientRect();
+            const endRect = end.getBoundingClientRect();
+
+            // Calculate start and end points
+            const startX = startRect.right - containerRect.left;
+            const startY = (startRect.top + startRect.bottom) / 2 - containerRect.top;
+            
+            const endX = endRect.left - containerRect.left;
+            const endY = (endRect.top + endRect.bottom) / 2 - containerRect.top;
+
+            // Create curved SVG path
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            
+            // Bezier curve control points
+            const cp1X = startX + curveOffset;
+            const cp1Y = startY;
+            const cp2X = endX - curveOffset;
+            const cp2Y = endY;
+
+            const d = `M ${startX} ${startY} C ${cp1X} ${cp1Y}, ${cp2X} ${cp2Y}, ${endX} ${endY}`;
+            
+            // Background line
+            const bgPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            bgPath.setAttribute("d", d);
+            bgPath.setAttribute("class", "path-base");
+            svgCanvas.appendChild(bgPath);
+
+            // Flowing line
+            path.setAttribute("d", d);
+            path.setAttribute("class", colorClass);
+            svgCanvas.appendChild(path);
+
+            return path;
+        }
+
+        // Initialize connection lines
+        function renderLines() {
+            svgCanvas.innerHTML = ''; // clear existing
+            
+            // Re-render markers if cleared
+            const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+            defs.innerHTML = `<marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="rgba(255, 107, 53, 0.6)" /></marker>`;
+            svgCanvas.appendChild(defs);
+
+            // Pre-2025 to AI Hub (Blue flows)
+            drawLine('tech-writer', 'ai-node', 'path-flow-cyan', 150);
+            drawLine('soft-eng', 'ai-node', 'path-flow-cyan', 150);
+            drawLine('bus-analyst', 'ai-node', 'path-flow-cyan', 150);
+            drawLine('proj-mgr', 'ai-node', 'path-flow-cyan', 150);
+
+            // AI Hub to 2026 Roles (Orange flows)
+            drawLine('ai-node', 'val-lead', 'path-flow-orange', 200);
+            drawLine('ai-node', 'content-ops', 'path-flow-orange', 200);
+            drawLine('ai-node', 'info-arch', 'path-flow-orange', 200);
+            drawLine('ai-node', 'sys-design', 'path-flow-orange', 200);
+            drawLine('ai-node', 'strat-ops', 'path-flow-orange', 200);
+            drawLine('ai-node', 'value-stream', 'path-flow-orange', 200);
+
+            // Software Engineer Divergence
+            const se = document.getElementById('soft-eng');
+            const domains = ['domain-cloud', 'domain-security', 'domain-ai', 'domain-product'];
+            
+            if (se) {
+                const rect = se.getBoundingClientRect();
+                const containerRect = document.getElementById('map-container').getBoundingClientRect();
+                const scrollX = window.scrollX;
+                const scrollY = window.scrollY;
+                
+                domains.forEach((id, index) => {
+                    const domainNode = document.getElementById(id);
+                    if (domainNode) {
+                        const dist = 140;
+                        const x = (rect.left - containerRect.left) - dist;
+                        const y = (rect.top + rect.bottom) / 2 - containerRect.top + (index - 1.5) * 45;
+                        
+                        gsap.set(domainNode, { left: x, top: y });
+                        drawDivergenceLine(id, 'soft-eng');
+                    }
+                });
+            }
+
+            // Position Flow Labels
+            positionLabel('label-pipeline', 'ai-node', 'content-ops', 0.5, -20);
+            positionLabel('label-prompt', 'ai-node', 'info-arch', 0.5, 20);
+            positionLabel('label-audit', 'ai-node', 'val-lead', 0.3, -40);
+
+            // Animate dashed lines flowing (GSAP)
+            gsap.to(".path-flow-cyan", { strokeDashoffset: -20, ease: "none", duration: 0.8, repeat: -1 });
+            gsap.to(".path-flow-orange", { strokeDashoffset: -20, ease: "none", duration: 0.8, repeat: -1 });
+        }
+
+        function positionLabel(labelId, startId, endId, progress, offsetY) {
+            const label = document.getElementById(labelId);
+            const start = document.getElementById(startId).getBoundingClientRect();
+            const end = document.getElementById(endId).getBoundingClientRect();
+            const container = document.getElementById('map-container').getBoundingClientRect();
+
+            const x = (start.left + (end.left - start.left) * progress) - container.left;
+            const y = (start.top + (end.top - start.top) * progress) - container.top + offsetY;
+
+            gsap.set(label, { left: x, top: y, opacity: 1 });
+        }
+
+        function drawDivergenceLine(startId, endId) {
+            const start = document.getElementById(startId);
+            const end = document.getElementById(endId);
+            const container = document.getElementById('map-container');
+
+            const containerRect = container.getBoundingClientRect();
+            const startRect = start.getBoundingClientRect();
+            const endRect = end.getBoundingClientRect();
+
+            const startX = startRect.right - containerRect.left;
+            const startY = (startRect.top + startRect.bottom) / 2 - containerRect.top;
+            const endX = endRect.left - containerRect.left;
+            const endY = (endRect.top + endRect.bottom) / 2 - containerRect.top;
+
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            const d = `M ${startX} ${startY} L ${endX} ${endY}`;
+            
+            path.setAttribute("d", d);
+            path.setAttribute("stroke", "rgba(255, 107, 53, 0.6)");
+            path.setAttribute("stroke-width", "1.5");
+            path.setAttribute("fill", "none");
+            path.setAttribute("stroke-dasharray", "4 2");
+            path.setAttribute("marker-end", "url(#arrowhead)");
+            svgCanvas.appendChild(path);
+        }
+
+        // Initialize Draggable
+        function initDraggable() {
+            Draggable.create(".role-card, .ai-hub, .domain-node", {
+                type: "x,y",
+                onDrag: renderLines,
+                onDragEnd: renderLines,
+                bounds: ".map-container",
+                inertia: true,
+                onClick: function(e) {
+                    if (this.target.classList.contains('role-card')) {
+                        // Modal is triggered by inline onclick, but we can manage here if needed
+                    }
+                }
+            });
+        }
+
+        // Render on load and on resize
+        window.addEventListener('load', () => {
+            lucide.createIcons();
+            renderLines();
+            initDraggable();
+            animateBrain();
+        });
+        window.addEventListener('resize', renderLines);
+        window.addEventListener('scroll', renderLines);
+
+        function animateBrain() {
+            // Rotate brain paths
+            gsap.to(".brain-part", {
+                rotation: 360,
+                transformOrigin: "50% 50%",
+                duration: 20,
+                repeat: -1,
+                ease: "none"
+            });
+
+            // Pulse nodes
+            gsap.to(".node-pulse", {
+                r: "+=1.5",
+                opacity: 0.4,
+                duration: 1,
+                repeat: -1,
+                yoyo: true,
+                stagger: {
+                    each: 0.2,
+                    from: "random"
+                }
+            });
+
+            // Pulse whole hub
+            gsap.to(".ai-hub", {
+                boxShadow: "0 0 60px rgba(0, 229, 255, 0.6)",
+                yoyo: true,
+                repeat: -1,
+                duration: 2,
+                ease: "sine.inOut"
+            });
+        }
+
+    </script>
+</body>
+</html>

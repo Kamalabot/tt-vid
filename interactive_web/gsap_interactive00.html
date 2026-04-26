@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus of Intent: The Industry Re-Bundling</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Draggable.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Futuristic Design System */
+            --bg-deep: #020617;
+            --bg-card: rgba(15, 23, 42, 0.7);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            
+            --cyan-glow: #00f2ff;
+            --orange-glow: #ff7b00;
+            --purple-glow: #bf00ff;
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            
+            --glass-blur: blur(16px);
+            --card-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            overflow: auto;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(191, 0, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 20% 30%, rgba(0, 242, 255, 0.03) 0%, transparent 40%);
+        }
+
+        header {
+            padding: 4rem 2rem 2rem 2rem;
+            text-align: center;
+            position: relative;
+            z-index: 100;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -2px;
+            background: linear-gradient(to right, var(--cyan-glow), #fff, var(--orange-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            filter: drop-shadow(0 0 20px rgba(0, 242, 255, 0.2));
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            opacity: 0.8;
+        }
+
+        /* Map Canvas */
+        #map-viewport {
+            position: relative;
+            width: 100vw;
+            min-height: 1200px;
+            min-width: 1800px;
+            padding: 4rem;
+            overflow: visible;
+        }
+
+        .canvas-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+        }
+
+        /* Glass Cards */
+        .node-card {
+            position: absolute;
+            width: 320px;
+            background: var(--bg-card);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            padding: 1.8rem;
+            cursor: grab;
+            user-select: none;
+            z-index: 50;
+            box-shadow: var(--card-shadow);
+        }
+
+        .node-card:active { cursor: grabbing; }
+
+        .node-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .node-card p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .icon-wrapper {
+            width: 52px;
+            height: 52px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.2rem;
+            border: 1px solid var(--border-glass);
+        }
+
+        .legacy .icon-wrapper { color: var(--cyan-glow); }
+        .evolved .icon-wrapper { color: var(--orange-glow); }
+
+        /* Internal Diffusion Container for Software Eng */
+        .diffusion-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.6rem;
+            margin-top: 1.2rem;
+            padding-top: 1.2rem;
+            border-top: 1px solid var(--border-glass);
+        }
+
+        .internal-tag {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-glass);
+            padding: 0.4rem;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            text-align: center;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .internal-tag:hover {
+            background: rgba(249, 115, 22, 0.1);
+            border-color: var(--orange-glow);
+            color: #fff;
+        }
+
+        /* Abstract Neural Core */
+        #neural-core {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 400px;
+            z-index: 20;
+            cursor: move;
+        }
+
+        .core-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .abstract-svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 30px rgba(191, 0, 255, 0.3));
+        }
+
+        .rotating-ring {
+            fill: none;
+            stroke: var(--purple-glow);
+            stroke-width: 0.5;
+            transform-origin: center;
+        }
+
+        .data-point {
+            fill: var(--purple-glow);
+            filter: blur(1px);
+        }
+
+        /* Connection Lines */
+        #svg-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .flow-line {
+            fill: none;
+            stroke-width: 1.5;
+            opacity: 0.2;
+        }
+
+        .flow-pulse {
+            fill: none;
+            stroke-width: 2;
+            stroke-dasharray: 8 12;
+            animation: pulse-flow 2s linear infinite;
+        }
+
+        @keyframes pulse-flow {
+            to { stroke-dashoffset: -20; }
+        }
+
+        /* Legends & Labels */
+        .zone-header {
+            position: absolute;
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 5px;
+            color: var(--text-secondary);
+            opacity: 0.4;
+            text-transform: uppercase;
+        }
+
+        .legend {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            background: var(--bg-card);
+            backdrop-filter: var(--glass-blur);
+            padding: 1.2rem;
+            border-radius: 16px;
+            border: 1px solid var(--border-glass);
+            z-index: 1000;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        /* Modal / Portal */
+        #portal {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.85);
+            backdrop-filter: blur(30px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .portal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            padding: 4rem;
+            border-radius: 32px;
+            max-width: 700px;
+            width: 90%;
+            position: relative;
+            box-shadow: 0 30px 60px -20px rgba(0,0,0,0.8);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: color 0.3s;
+        }
+        .close-btn:hover { color: #fff; }
+
+        .tag-cloud {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .tag {
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-glass);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="legend">
+        <div class="legend-item"><div class="dot" style="background: var(--cyan-glow); color: var(--cyan-glow);"></div> Human-Led Input</div>
+        <div class="legend-item"><div class="dot" style="background: var(--purple-glow); color: var(--purple-glow);"></div> Synthetic Processing</div>
+        <div class="legend-item"><div class="dot" style="background: var(--orange-glow); color: var(--orange-glow);"></div> AI-Augmented Output</div>
+    </div>
+
+    <header>
+        <h1>THE GREAT RE-BUNDLING</h1>
+        <div class="subtitle">Nexus of Industry Intent & Synthetic Core</div>
+    </header>
+
+    <div id="portal">
+        <div class="portal-content">
+            <div class="close-btn" onclick="closePortal()"><i data-lucide="x"></i></div>
+            <h2 id="portal-title" style="font-size: 2.5rem; margin-bottom: 1rem;">Role Analysis</h2>
+            <p id="portal-desc" style="font-size: 1.1rem; color: var(--text-secondary); line-height: 1.7;"></p>
+            <div id="portal-tags" class="tag-cloud"></div>
+        </div>
+    </div>
+
+    <div id="map-viewport">
+        <div class="canvas-grid"></div>
+        
+        <svg id="svg-layer">
+            <!-- Dynamic Connection Paths -->
+        </svg>
+
+        <!-- LEGACY ZONE -->
+        <div class="zone-header" style="left: 100px; top: 150px;">Legacy Systems</div>
+        
+        <div class="node-card legacy" id="role-tw" style="top: 220px; left: 100px;">
+            <div class="icon-wrapper"><i data-lucide="file-text"></i></div>
+            <h3>Technical Writer</h3>
+            <p>Manual documentation and knowledge capture for legacy syntax.</p>
+        </div>
+
+        <div class="node-card legacy" id="role-se" style="top: 480px; left: 100px;">
+            <div class="icon-wrapper"><i data-lucide="cpu"></i></div>
+            <h3>Software Engineer</h3>
+            <p>Boilerplate generation and manual logic maintenance cycles.</p>
+            <div class="diffusion-grid">
+                <div class="internal-tag" id="tag-cloud">Cloud Infra</div>
+                <div class="internal-tag" id="tag-sec">Cyber Security</div>
+                <div class="internal-tag" id="tag-ml">ML Ops</div>
+                <div class="internal-tag" id="tag-ux">Cognitive UX</div>
+            </div>
+        </div>
+
+        <div class="node-card legacy" id="role-ba" style="top: 800px; left: 100px;">
+            <div class="icon-wrapper"><i data-lucide="network"></i></div>
+            <h3>Business Analyst</h3>
+            <p>Requirements gathering and process mapping for human developers.</p>
+        </div>
+
+        <!-- ABSTRACT NEURAL CORE -->
+        <div id="neural-core">
+            <div class="core-container">
+                <svg class="abstract-svg" viewBox="0 0 200 200">
+                    <!-- Concentric Abstract Shapes -->
+                    <circle class="rotating-ring" cx="100" cy="100" r="80" stroke-dasharray="10 20" />
+                    <circle class="rotating-ring" cx="100" cy="100" r="60" stroke-dasharray="2 10" style="animation-direction: reverse;" />
+                    <circle class="rotating-ring" cx="100" cy="100" r="40" stroke-dasharray="5 5" />
+                    
+                    <!-- Core Geometric Center -->
+                    <polygon points="100,70 130,115 70,115" fill="none" stroke="var(--purple-glow)" stroke-width="1" />
+                    <circle class="data-point" cx="100" cy="100" r="5" />
+                    
+                    <!-- Dynamic Orbitals -->
+                    <g class="orbitals">
+                        <circle class="data-point" cx="100" cy="20" r="2" />
+                        <circle class="data-point" cx="180" cy="100" r="2" />
+                        <circle class="data-point" cx="100" cy="180" r="2" />
+                        <circle class="data-point" cx="20" cy="100" r="2" />
+                    </g>
+                </svg>
+                <div style="position: absolute; bottom: 40px; font-weight: 800; color: var(--purple-glow); letter-spacing: 4px; font-size: 0.6rem; opacity: 0.6;">SYNTHETIC PROCESSING</div>
+            </div>
+        </div>
+
+        <!-- EVOLVED ZONE -->
+        <div class="zone-header" style="right: 100px; top: 100px;">Evolved Horizons</div>
+
+        <div class="node-card evolved" id="role-val" style="top: 150px; right: 100px;">
+            <div class="icon-wrapper"><i data-lucide="shield-check"></i></div>
+            <h3>Validation & Governance</h3>
+            <p>Safety auditing and verifying AI drafts for regulatory compliance.</p>
+        </div>
+
+        <div class="node-card evolved" id="role-ops" style="top: 350px; right: 100px;">
+            <div class="icon-wrapper"><i data-lucide="settings-2"></i></div>
+            <h3>Content Ops Engineer</h3>
+            <p>Managing Docs-as-Code pipelines and RAG knowledge connectors.</p>
+        </div>
+
+        <div class="node-card evolved" id="role-arch" style="top: 550px; right: 100px;">
+            <div class="icon-wrapper"><i data-lucide="share-2"></i></div>
+            <h3>Information Architect</h3>
+            <p>Structuring chatbot interactions and semantic strategy architecture.</p>
+        </div>
+
+        <div class="node-card evolved" id="role-sys" style="top: 750px; right: 100px;">
+            <div class="icon-wrapper"><i data-lucide="boxes"></i></div>
+            <h3>AI Workflow Architect</h3>
+            <p>Orchestrating agent swarms and ensuring architectural system integrity.</p>
+        </div>
+
+        <div class="node-card evolved" id="role-strat" style="top: 950px; right: 100px;">
+            <div class="icon-wrapper"><i data-lucide="globe"></i></div>
+            <h3>Strategic Ops Lead</h3>
+            <p>Macro-system efficiency and AI-augmented strategic alignment.</p>
+        </div>
+
+        <div class="node-card evolved" id="role-vstream" style="top: 1150px; right: 100px;">
+            <div class="icon-wrapper"><i data-lucide="user-plus"></i></div>
+            <h3>Value Stream Orchestrator</h3>
+            <p>Cross-functional integration and bot performance analytics.</p>
+        </div>
+
+    </div>
+
+    <script>
+        /**
+         * NEXUS CORE INTERACTIVE ENGINE
+         */
+
+        const viewport = document.getElementById('map-viewport');
+        const svg = document.getElementById('svg-layer');
+        const neuralCore = document.getElementById('neural-core');
+
+        // Connection Definitions
+        const primaryFlows = [
+            { from: 'role-tw', to: 'neural-core', color: 'var(--cyan-glow)' },
+            { from: 'role-se', to: 'neural-core', color: 'var(--cyan-glow)' },
+            { from: 'role-ba', to: 'neural-core', color: 'var(--cyan-glow)' },
+            { from: 'neural-core', to: 'role-val', color: 'var(--orange-glow)' },
+            { from: 'neural-core', to: 'role-ops', color: 'var(--orange-glow)' },
+            { from: 'neural-core', to: 'role-arch', color: 'var(--orange-glow)' },
+            { from: 'neural-core', to: 'role-sys', color: 'var(--orange-glow)' },
+            { from: 'neural-core', to: 'role-strat', color: 'var(--orange-glow)' },
+            { from: 'neural-core', to: 'role-vstream', color: 'var(--orange-glow)' }
+        ];
+
+        // Software Diffusion Definitions
+        const diffusionFlows = [
+            { from: 'tag-cloud', to: 'role-sys', color: 'rgba(249, 115, 22, 0.4)' },
+            { from: 'tag-sec', to: 'role-val', color: 'rgba(249, 115, 22, 0.4)' },
+            { from: 'tag-ml', to: 'role-ops', color: 'rgba(249, 115, 22, 0.4)' },
+            { from: 'tag-ux', to: 'role-arch', color: 'rgba(249, 115, 22, 0.4)' }
+        ];
+
+        function init() {
+            lucide.createIcons();
+            
+            // Setup Interaction
+            Draggable.create(".node-card, #neural-core", {
+                type: "x,y",
+                onDrag: updateLines,
+                onDragEnd: updateLines,
+                bounds: "#map-viewport",
+                inertia: true,
+                onPress: function() {
+                    gsap.to(this.target, { scale: 1.02, duration: 0.2, zIndex: 100 });
+                },
+                onRelease: function() {
+                    gsap.to(this.target, { scale: 1, duration: 0.2, zIndex: 50 });
+                }
+            });
+
+            // Core Animations
+            gsap.to(".rotating-ring", { rotation: 360, duration: 20, repeat: -1, ease: "none" });
+            gsap.to(".orbitals", { rotation: -360, duration: 15, repeat: -1, ease: "none", transformOrigin: "50% 50%" });
+
+            updateLines();
+            window.addEventListener('resize', updateLines);
+        }
+
+        function updateLines() {
+            svg.innerHTML = '';
+            
+            // Draw Main Flows
+            primaryFlows.forEach(flow => {
+                const start = document.getElementById(flow.from);
+                const end = document.getElementById(flow.to);
+                drawCurvedPath(start, end, flow.color);
+            });
+
+            // Draw Diffusion Flows
+            diffusionFlows.forEach(flow => {
+                const start = document.getElementById(flow.from);
+                const end = document.getElementById(flow.to);
+                drawCurvedPath(start, end, flow.color, true);
+            });
+        }
+
+        function drawCurvedPath(el1, el2, color, isDashed = false) {
+            const r1 = el1.getBoundingClientRect();
+            const r2 = el2.getBoundingClientRect();
+            const v = viewport.getBoundingClientRect();
+
+            const x1 = (r1.left + r1.right) / 2 - v.left;
+            const y1 = (r1.top + r1.bottom) / 2 - v.top;
+            const x2 = (r2.left + r2.right) / 2 - v.left;
+            const y2 = (r2.top + r2.bottom) / 2 - v.top;
+
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            const pulse = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            
+            const dx = Math.abs(x2 - x1) * 0.6;
+            const d = `M${x1},${y1} C${x1 + dx},${y1} ${x2 - dx},${y2} ${x2},${y2}`;
+
+            path.setAttribute("d", d);
+            path.setAttribute("class", "flow-line");
+            path.setAttribute("stroke", color);
+            
+            pulse.setAttribute("d", d);
+            pulse.setAttribute("class", "flow-pulse");
+            pulse.setAttribute("stroke", color);
+            if (isDashed) pulse.setAttribute("stroke-dasharray", "4 8");
+
+            svg.appendChild(path);
+            svg.appendChild(pulse);
+        }
+
+        /**
+         * Portal Logic
+         */
+        const portalData = {
+            'Technical Writer': { 
+                desc: 'Transitioning from manual content creation to validation lead. Syntax is now synthetic; the writer becomes the editor-in-chief of machine drafts.',
+                tags: ['Validation', 'Safety Auditing', 'Governance'] 
+            },
+            'Software Engineer': { 
+                desc: 'Manual logic and boilerplate are re-bundled into synthetic patterns. Engineering effort diffuses into specialized high-value architecture domains.',
+                tags: ['System Design', 'Orchestration', 'Multi-Agent Logic'] 
+            },
+            'Business Analyst': { 
+                desc: 'Strategic process mapping moves from manual elicitation to systemic orchestration. The analyst becomes the Information Architect.',
+                tags: ['Taxonomy', 'Semantic Strategy', 'RAG Flows'] 
+            }
+        };
+
+        function openPortal(id) {
+            const card = document.getElementById(id);
+            const title = card.querySelector('h3').innerText;
+            const data = portalData[title] || { desc: card.querySelector('p').innerText, tags: ['Evolved Role', 'Future Ready'] };
+
+            document.getElementById('portal-title').innerText = title;
+            document.getElementById('portal-desc').innerText = data.desc;
+            
+            const tagContainer = document.getElementById('portal-tags');
+            tagContainer.innerHTML = '';
+            data.tags.forEach(t => {
+                const span = document.createElement('span');
+                span.className = 'tag';
+                span.innerText = t;
+                tagContainer.appendChild(span);
+            });
+
+            document.getElementById('portal').style.display = 'flex';
+            gsap.from(".portal-content", { y: 100, opacity: 0, duration: 0.5, ease: "power4.out" });
+        }
+
+        function closePortal() {
+            gsap.to(".portal-content", { y: 50, opacity: 0, duration: 0.3, onComplete: () => {
+                document.getElementById('portal').style.display = 'none';
+            }});
+        }
+
+        document.querySelectorAll('.node-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                // Don't open portal if dragging
+                if (e.target.closest('.internal-tag')) return;
+                openPortal(card.id);
+            });
+        });
+
+        window.onload = init;
+
+    </script>
+</body>
+</html>

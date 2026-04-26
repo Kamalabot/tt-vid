@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus of Intent | Advanced Telemetry</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Dynamic Background Grid -->
+    <div class="grid-background"></div>
+
+    <header>
+        <div class="header-inner">
+            <h1>NEXUS CORE</h1>
+            <div class="subtitle">Synthetic Data Processing & Role Re-Bundling</div>
+        </div>
+    </header>
+
+    <!-- Data Telemetry Terminal -->
+    <div id="data-terminal">
+        <div class="terminal-header" id="terminal-drag-handle">
+            <div style="display: flex; align-items: center; gap: 0.8rem; flex: 1;">
+                <i data-lucide="terminal"></i>
+                <span>NEXUS TELEMETRY v3.0</span>
+            </div>
+            <div class="terminal-controls" id="terminal-toggle" style="cursor: pointer; padding: 0.2rem;">
+                <i data-lucide="minus" id="terminal-toggle-icon"></i>
+            </div>
+        </div>
+        <div class="terminal-output" id="terminal-output">
+            <div class="log-line">> SYSTEM INIT: OBSERVER ONLINE...</div>
+            <div class="log-line">> AWAITING HUMAN INTENT...</div>
+        </div>
+    </div>
+
+    <!-- Strategic Legend -->
+    <div class="legend">
+        <div class="legend-item">
+            <div class="dot cyan"></div>
+            <span>Human Intent</span>
+        </div>
+        <div class="legend-item">
+            <div class="dot purple"></div>
+            <span>Synthetic Core</span>
+        </div>
+        <div class="legend-item">
+            <div class="dot orange"></div>
+            <span>AI Augmentation</span>
+        </div>
+    </div>
+
+    <!-- Portal Container for Flip Animation -->
+    <div id="portal-overlay" class="portal-overlay"></div>
+
+    <!-- Main Interactive Surface -->
+    <main id="app-canvas">
+        <div id="zoom-container">
+            
+            <svg id="svg-connections">
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+                        <polygon points="0 0, 10 5, 0 10" fill="currentColor" />
+                    </marker>
+                    <filter id="neon-glow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="3" result="blur" />
+                        <feMerge>
+                            <feMergeNode in="blur" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
+                </defs>
+            </svg>
+
+            <!-- ZONE: LEGACY -->
+            <div class="zone-label" style="left: -20px; top: 300px;">LEGACY 2024</div>
+            
+            <div class="node-card legacy" id="role-tw" data-color="#00f2ff" style="top: 120px; left: 100px;">
+                <div class="icon-box"><i data-lucide="file-text"></i></div>
+                <h3>Technical Writer</h3>
+                <p>Knowledge capture for legacy syntax.</p>
+                <!-- Hidden expanded content for Flip -->
+                <div class="expanded-content">
+                    <hr>
+                    <p><strong>Intent Captured:</strong> Transitioning manual documentation flows into synthetic validation loops.</p>
+                </div>
+            </div>
+
+            <div class="node-card legacy" id="role-se" data-color="#00f2ff" style="top: 400px; left: 100px;">
+                <div class="icon-box"><i data-lucide="cpu"></i></div>
+                <h3>Software Engineer</h3>
+                <p>Boilerplate generation and logic maintenance.</p>
+                <div class="diffusion-panel">
+                    <div class="diffusion-item" id="tag-cloud">Cloud Infra</div>
+                    <div class="diffusion-item" id="tag-sec">Cyber Security</div>
+                    <div class="diffusion-item" id="tag-ml">ML Ops</div>
+                    <div class="diffusion-item" id="tag-ux">Cognitive UX</div>
+                </div>
+                <div class="expanded-content">
+                    <hr>
+                    <p><strong>Intent Captured:</strong> Engineering effort diffuses into architectural integrity and multi-agent systems.</p>
+                </div>
+            </div>
+
+            <div class="node-card legacy" id="role-ba" data-color="#00f2ff" style="top: 780px; left: 100px;">
+                <div class="icon-box"><i data-lucide="network"></i></div>
+                <h3>Business Analyst</h3>
+                <p>Process mapping for human developers.</p>
+                <div class="expanded-content">
+                    <hr>
+                    <p><strong>Intent Captured:</strong> Strategic orchestration bridging human intent with synthetic execution.</p>
+                </div>
+            </div>
+
+            <!-- ZONE: CORE -->
+            <div id="neural-nexus" style="top: 350px; left: 675px;">
+                <div class="nexus-wrapper">
+                    <svg class="nexus-svg" viewBox="0 0 200 200">
+                        <circle class="ring ring-outer" cx="100" cy="100" r="85" />
+                        <circle class="ring ring-mid" cx="100" cy="100" r="65" />
+                        <circle class="ring ring-inner" cx="100" cy="100" r="45" />
+                        <g class="core-geometry">
+                            <polygon points="100,50 143,125 57,125" />
+                            <polygon points="100,150 143,75 57,75" style="opacity: 0.5;" />
+                            <circle class="core-pulse" cx="100" cy="100" r="10" />
+                        </g>
+                    </svg>
+                    <div class="nexus-label">SYNTHETIC CORE</div>
+                </div>
+            </div>
+
+            <!-- ZONE: EVOLVED -->
+            <div class="zone-label" style="right: -20px; top: 300px;">HORIZON 2026+</div>
+
+            <div class="node-card evolved" id="role-val" data-color="#ff7b00" style="top: 60px; right: 100px;">
+                <div class="icon-box"><i data-lucide="shield-check"></i></div>
+                <h3>Validation Lead</h3>
+                <p>Safety auditing & compliance verification.</p>
+                <div class="expanded-content"><hr><p><strong>Focus:</strong> AI Hallucination Audits.</p></div>
+            </div>
+
+            <div class="node-card evolved" id="role-ops" data-color="#ff7b00" style="top: 240px; right: 100px;">
+                <div class="icon-box"><i data-lucide="settings-2"></i></div>
+                <h3>Content Ops</h3>
+                <p>Managing RAG knowledge pipelines.</p>
+                <div class="expanded-content"><hr><p><strong>Focus:</strong> Docs-as-Code pipeline integrations.</p></div>
+            </div>
+
+            <div class="node-card evolved" id="role-arch" data-color="#ff7b00" style="top: 420px; right: 100px;">
+                <div class="icon-box"><i data-lucide="share-2"></i></div>
+                <h3>Info Architect</h3>
+                <p>Structuring semantic strategy architecture.</p>
+                <div class="expanded-content"><hr><p><strong>Focus:</strong> Ontology and Chatbot UX.</p></div>
+            </div>
+
+            <div class="node-card evolved" id="role-sys" data-color="#ff7b00" style="top: 600px; right: 100px;">
+                <div class="icon-box"><i data-lucide="boxes"></i></div>
+                <h3>Workflow Architect</h3>
+                <p>Orchestrating agent swarm integrity.</p>
+                <div class="expanded-content"><hr><p><strong>Focus:</strong> Swarm logic mapping.</p></div>
+            </div>
+
+            <div class="node-card evolved" id="role-strat" data-color="#ff7b00" style="top: 780px; right: 100px;">
+                <div class="icon-box"><i data-lucide="globe"></i></div>
+                <h3>Strategic Ops</h3>
+                <p>Macro-system efficiency and alignment.</p>
+                <div class="expanded-content"><hr><p><strong>Focus:</strong> Inter-department orchestration.</p></div>
+            </div>
+
+            <div class="node-card evolved" id="role-vstream" data-color="#ff7b00" style="top: 960px; right: 100px;">
+                <div class="icon-box"><i data-lucide="user-plus"></i></div>
+                <h3>Stream Orchestrator</h3>
+                <p>Integration and performance analytics.</p>
+                <div class="expanded-content"><hr><p><strong>Focus:</strong> Metric evaluation and Bot tuning.</p></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- App Script -->
+    <script type="module" src="main.js"></script>
+</body>
+</html>
