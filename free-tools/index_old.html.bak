@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adobe vs Figma Freefall - Vertical</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --accent-red: #ff1a1a;
+            --accent-blue: #00bfff;
+            --text-primary: #ffffff;
+            --text-secondary: #999999;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: var(--bg-color);
+            color: var(--text-primary);
+            overflow: hidden;
+            width: 1080px;
+            height: 1920px;
+        }
+
+        #canvas {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 40%, #1a1a1a 0%, #000 100%);
+            display: flex;
+            flex-direction: column;
+            padding: 120px 60px;
+        }
+
+        .clip {
+            position: absolute;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* Typography - Always at Bottom */
+        .text-overlay {
+            width: 100%;
+            text-align: center;
+            z-index: 50;
+            bottom: 120px;
+            left: 0;
+            padding: 0 40px;
+        }
+
+        .title {
+            font-size: 100px;
+            font-weight: 900;
+            letter-spacing: -4px;
+            line-height: 0.95;
+            background: linear-gradient(180deg, #fff 40%, #888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* Chart System */
+        .charts-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: 120px;
+            margin-top: 150px;
+            z-index: 10;
+        }
+
+        .chart-box {
+            position: relative;
+            width: 100%;
+            height: 550px;
+            background: var(--glass);
+            border: 2px solid var(--border);
+            border-radius: 60px;
+            padding: 60px;
+            backdrop-filter: blur(40px);
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 50px;
+        }
+
+        .label {
+            font-size: 40px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 8px;
+            color: #fff;
+        }
+
+        .price {
+            font-size: 90px;
+            font-weight: 900;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -3px;
+        }
+
+        .adobe-theme { color: var(--accent-red); filter: drop-shadow(0 0 15px var(--accent-red)); }
+        .figma-theme { color: var(--accent-blue); filter: drop-shadow(0 0 15px var(--accent-blue)); }
+
+        .svg-container {
+            width: 100%;
+            height: 350px;
+            overflow: visible;
+        }
+
+        /* Super Bright Lines */
+        .line-path {
+            fill: none;
+            stroke-width: 18;
+            stroke-linecap: round;
+            filter: drop-shadow(0 0 35px currentColor);
+        }
+
+        .line-glow {
+            fill: none;
+            stroke-width: 24;
+            stroke-linecap: round;
+            opacity: 0.4;
+            filter: blur(20px);
+        }
+
+        .area-fill {
+            stroke: none;
+            opacity: 0;
+        }
+
+        /* Swipe Mask */
+        .mask-rect {
+            width: 0;
+            height: 100%;
+        }
+
+        /* Live Badge */
+        .badge {
+            position: absolute;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 18px 45px;
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #ff1a1a;
+            border-radius: 100px;
+            font-size: 26px;
+            font-weight: 800;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+        }
+
+        .badge::before {
+            content: '';
+            width: 14px;
+            height: 14px;
+            background: #ff1a1a;
+            border-radius: 50%;
+            box-shadow: 0 0 20px #ff1a1a;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="canvas" data-composition-id="main" data-width="1080" data-height="1920" data-start="0" data-duration="10">
+        
+        <!-- Live Alert -->
+        <div class="clip badge" data-start="0" data-duration="10" data-track-index="5">
+            CRASH ALERT
+        </div>
+
+        <!-- CHARTS SECTION -->
+        <div id="charts" class="clip charts-container" data-start="0" data-duration="10" data-track-index="1">
+            
+            <!-- Adobe -->
+            <div class="chart-box">
+                <div class="chart-header">
+                    <span class="label">ADBE</span>
+                    <span id="adobe-price" class="price adobe-theme">$420.00</span>
+                </div>
+                <div class="svg-container">
+                    <svg viewBox="0 0 900 350" preserveAspectRatio="none" style="width: 100%; height: 100%;">
+                        <defs>
+                            <clipPath id="swipe-adobe">
+                                <rect id="mask-adobe" x="0" y="0" width="0" height="350" />
+                            </clipPath>
+                            <linearGradient id="grad-adobe" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="var(--accent-red)" stop-opacity="0.5" />
+                                <stop offset="100%" stop-color="var(--accent-red)" stop-opacity="0" />
+                            </linearGradient>
+                        </defs>
+                        <g clip-path="url(#swipe-adobe)">
+                            <path class="area-fill" fill="url(#grad-adobe)" d="M 0 350 L 0 50 Q 225 40 450 120 T 900 200 L 900 350 Z" style="opacity: 0.3;" />
+                            <path class="line-glow adobe-theme" d="M 0 50 Q 225 40 450 120 T 900 200" />
+                            <path id="adobe-path" class="line-path adobe-theme" d="M 0 50 Q 225 40 450 120 T 900 200" />
+                        </g>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Figma -->
+            <div class="chart-box">
+                <div class="chart-header">
+                    <span class="label">FIGMA</span>
+                    <span id="figma-price" class="price figma-theme">$85.00</span>
+                </div>
+                <div class="svg-container">
+                    <svg viewBox="0 0 900 350" preserveAspectRatio="none" style="width: 100%; height: 100%;">
+                        <defs>
+                            <clipPath id="swipe-figma">
+                                <rect id="mask-figma" x="0" y="0" width="0" height="350" />
+                            </clipPath>
+                            <linearGradient id="grad-figma" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="var(--accent-blue)" stop-opacity="0.5" />
+                                <stop offset="100%" stop-color="var(--accent-blue)" stop-opacity="0" />
+                            </linearGradient>
+                        </defs>
+                        <g clip-path="url(#swipe-figma)">
+                            <path class="area-fill" fill="url(#grad-figma)" d="M 0 350 L 0 40 Q 300 30 600 200 T 900 320 L 900 350 Z" style="opacity: 0.3;" />
+                            <path class="line-glow figma-theme" d="M 0 40 Q 300 30 600 200 T 900 320" />
+                            <path id="figma-path" class="line-path figma-theme" d="M 0 40 Q 300 30 600 200 T 900 320" />
+                        </g>
+                    </svg>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- TEXT SEQUENCES (Always at Bottom) -->
+        <div id="text-1" class="clip text-overlay" data-start="0.5" data-duration="4.5" data-track-index="2">
+            <h1 class="title">ADOBE & FIGMA<br>ARE FREE FALLING</h1>
+        </div>
+
+        <div id="text-2" class="clip text-overlay" data-start="5.5" data-duration="4.5" data-track-index="2">
+            <h1 class="title">HAVE YOU<br>WONDERED<br>WHY?</h1>
+        </div>
+
+    </div>
+
+    <script>
+        window.__timelines = window.__timelines || {};
+        const tl = gsap.timeline({ paused: true });
+        window.__timelines["main"] = tl;
+
+        // Visibility Logic
+        const clips = document.querySelectorAll('.clip');
+        clips.forEach(clip => {
+            const start = parseFloat(clip.dataset.start);
+            const duration = parseFloat(clip.dataset.duration);
+            tl.set(clip, { autoAlpha: 1, visibility: 'visible' }, start);
+            tl.set(clip, { autoAlpha: 0, visibility: 'hidden' }, start + duration);
+        });
+
+        // --- Animations ---
+
+        // 1. Chart Animations (Swipe Effect)
+        const maskAdobe = document.querySelector('#mask-adobe');
+        const maskFigma = document.querySelector('#mask-figma');
+        const adobePath = document.querySelector('#adobe-path');
+        const figmaPath = document.querySelector('#figma-path');
+        
+        // Initial setup for drawing effect
+        const PATH_LENGTH = 1500;
+        gsap.set([adobePath, figmaPath], { strokeDasharray: PATH_LENGTH, strokeDashoffset: PATH_LENGTH });
+
+        // Swipe & Draw combined
+        tl.to(maskAdobe, { attr: { width: 900 }, duration: 4, ease: "power2.inOut" }, 0.5);
+        tl.to(adobePath, { strokeDashoffset: 0, duration: 4, ease: "power2.inOut" }, 0.5);
+
+        tl.to(maskFigma, { attr: { width: 900 }, duration: 4.5, ease: "power2.inOut" }, 1.0);
+        tl.to(figmaPath, { strokeDashoffset: 0, duration: 4.5, ease: "power2.inOut" }, 1.0);
+
+        // Price Tickers
+        const adobeVal = { v: 420.00 };
+        tl.to(adobeVal, { 
+            v: 246.09, 
+            duration: 4, 
+            ease: "power2.inOut",
+            onUpdate: () => document.getElementById('adobe-price').innerText = '$' + adobeVal.v.toFixed(2)
+        }, 0.5);
+
+        const figmaVal = { v: 85.00 };
+        tl.to(figmaVal, { 
+            v: 17.32, 
+            duration: 4.5, 
+            ease: "power2.inOut",
+            onUpdate: () => document.getElementById('figma-price').innerText = '$' + figmaVal.v.toFixed(2)
+        }, 1.0);
+
+        // 2. Text Animations
+        tl.from("#text-1 .title", { y: 150, autoAlpha: 0, duration: 1.2, ease: "power4.out" }, 0.5);
+        tl.to("#text-1 .title", { y: -50, autoAlpha: 0, duration: 0.8, ease: "power4.in" }, 4.5);
+        tl.set("#text-1 .title", { autoAlpha: 0, visibility: 'hidden' }, 5.5);
+
+        tl.from("#text-2 .title", { y: 150, autoAlpha: 0, duration: 1.2, ease: "power4.out" }, 5.5);
+        
+        // Final fade
+        tl.to("#canvas", { opacity: 0, duration: 0.5 }, 9.5);
+        tl.set("#canvas", { visibility: 'hidden' }, 10);
+
+    </script>
+</body>
+</html>

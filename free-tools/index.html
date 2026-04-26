@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stitched Showcase - Free Tools</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        :root {
+            --bg: #000;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            overflow: hidden;
+            width: 1080px;
+            height: 1920px;
+        }
+
+        #canvas {
+            position: relative;
+            width: 1080px;
+            height: 1920px;
+            background: #000;
+        }
+
+        .video-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1080px;
+            height: 1920px;
+            overflow: hidden;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Overlay for transitions */
+        .transition-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            mix-blend-mode: overlay;
+            opacity: 0;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .clip {
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas" data-composition-id="main" data-width="1080" data-height="1920" data-start="0" data-duration="29">
+        
+        <!-- Scene 1: Adobe vs Figma (0-10s) -->
+        <div id="clip-1" class="clip video-container" data-start="0" data-duration="10" data-track-index="1">
+            <video src="renders/adobe_figma.mp4" muted></video>
+        </div>
+
+        <!-- Scene 2: Canva & Maxxon (9.5-19.5s) -->
+        <div id="clip-2" class="clip video-container" data-start="9.5" data-duration="10" data-track-index="2">
+            <video src="renders/canva_maxxon.mp4" muted></video>
+        </div>
+
+        <!-- Scene 3: GSAP & Hyperframes (19-29s) -->
+        <div id="clip-3" class="clip video-container" data-start="19" data-duration="10" data-track-index="1">
+            <video src="renders/gsap_hf.mp4" muted></video>
+        </div>
+
+        <!-- Flash Transition Overlay -->
+        <div id="flash" class="transition-overlay"></div>
+
+    </div>
+
+    <script>
+        window.__timelines = window.__timelines || {};
+        const tl = gsap.timeline({ paused: true });
+        window.__timelines["main"] = tl;
+
+        const v1 = document.querySelector('#clip-1 video');
+        const v2 = document.querySelector('#clip-2 video');
+        const v3 = document.querySelector('#clip-3 video');
+
+        // Visibility Logic
+        const clips = document.querySelectorAll('.clip');
+        clips.forEach(clip => {
+            const start = parseFloat(clip.dataset.start);
+            const duration = parseFloat(clip.dataset.duration);
+            tl.set(clip, { visibility: 'visible' }, start);
+            tl.set(clip, { visibility: 'hidden' }, start + duration);
+        });
+
+        // --- VIDEO PLAYBACK CONTROL ---
+        // Map 10s of video to 10s of timeline at correct offsets
+        tl.to(v1, { currentTime: 10, duration: 10, ease: "none" }, 0);
+        tl.to(v2, { currentTime: 10, duration: 10, ease: "none" }, 9.5);
+        tl.to(v3, { currentTime: 10, duration: 10, ease: "none" }, 19);
+
+        // --- TRANSITIONS ---
+
+        // Transition 1 -> 2 (Horizontal Slide)
+        // Happens between 9.5s and 10s
+        tl.to("#clip-1", { x: -1080, duration: 0.5, ease: "power2.inOut" }, 9.5);
+        tl.from("#clip-2", { x: 1080, duration: 0.5, ease: "power2.inOut" }, 9.5);
+        
+        // Flash Effect
+        tl.to("#flash", { opacity: 0.6, duration: 0.2, ease: "power2.out" }, 9.6);
+        tl.to("#flash", { opacity: 0, duration: 0.3, ease: "power2.in" }, 9.8);
+
+        // Transition 2 -> 3 (Vertical Slide)
+        // Happens between 19s and 19.5s
+        tl.to("#clip-2", { y: -1920, duration: 0.5, ease: "power2.inOut" }, 19);
+        tl.from("#clip-3", { y: 1920, duration: 0.5, ease: "power2.inOut" }, 19);
+
+        // Flash Effect
+        tl.to("#flash", { opacity: 0.6, duration: 0.2, ease: "power2.out" }, 19.1);
+        tl.to("#flash", { opacity: 0, duration: 0.3, ease: "power2.in" }, 19.3);
+
+    </script>
+</body>
+</html>

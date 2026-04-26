@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software Acquisitions - FREE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        :root {
+            --bg: #050505;
+            --canva: #00C4CC;
+            --maxon: #E1001A;
+            --free-glow: #39FF14;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: #fff;
+            overflow: hidden;
+            width: 1080px;
+            height: 1920px;
+        }
+
+        #canvas {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 40%, #151515 0%, #050505 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .clip {
+            position: absolute;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* Acquisition Container */
+        .acquisition-stage {
+            position: relative;
+            width: 1000px;
+            height: 800px;
+            margin-top: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cards-row {
+            display: flex;
+            align-items: center;
+            gap: 80px;
+            z-index: 10;
+        }
+
+        .brand-card {
+            width: 420px;
+            height: 420px;
+            background: var(--glass);
+            border: 2px solid var(--border);
+            border-radius: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(30px);
+            box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+        }
+
+        .label-tag {
+            font-size: 24px;
+            font-weight: 800;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 30px;
+        }
+
+        .brand-name {
+            font-size: 64px;
+            font-weight: 900;
+            letter-spacing: -2px;
+            text-align: center;
+        }
+
+        /* Buying Arrow */
+        .arrow-svg {
+            position: absolute;
+            width: 300px;
+            height: 100px;
+            z-index: 5;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .arrow-path {
+            fill: none;
+            stroke: #fff;
+            stroke-width: 8;
+            stroke-dasharray: 500;
+            stroke-dashoffset: 500;
+        }
+
+        .buying-badge {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff;
+            color: #000;
+            padding: 10px 30px;
+            border-radius: 10px;
+            font-size: 28px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Free Tier */
+        .free-section {
+            margin-top: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 20;
+        }
+
+        .free-badge {
+            font-size: 140px;
+            font-weight: 900;
+            color: var(--free-glow);
+            text-shadow: 0 0 40px var(--free-glow);
+            letter-spacing: -5px;
+            line-height: 1;
+        }
+
+        .commercial-text {
+            font-size: 36px;
+            font-weight: 700;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-top: 10px;
+            background: rgba(255,255,255,0.1);
+            padding: 10px 40px;
+            border-radius: 100px;
+        }
+
+        /* Branding Themes */
+        .canva-theme { border-color: var(--canva); color: var(--canva); }
+        .maxon-theme { border-color: var(--maxon); color: var(--maxon); }
+        .software-theme { border-color: #fff; color: #fff; }
+
+        /* Final Section */
+        .bottom-section {
+            position: absolute;
+            bottom: 100px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 50;
+        }
+
+        .huge-q {
+            font-size: 320px;
+            font-weight: 900;
+            color: #fff;
+            line-height: 0.8;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 30px rgba(255,255,255,0.5));
+            animation: q-pulse 2s infinite ease-in-out;
+        }
+
+        @keyframes q-pulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 30px rgba(255,255,255,0.3)); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 60px rgba(255,255,255,0.6)); }
+        }
+
+        .bottom-title {
+            font-size: 82px;
+            font-weight: 900;
+            line-height: 1;
+            background: linear-gradient(180deg, #fff 0%, #777 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            padding: 0 60px;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="canvas" data-composition-id="main" data-width="1080" data-height="1920" data-start="0" data-duration="10">
+        
+        <!-- SCENE 1: CANVA + CAVALRY -->
+        <div id="scene-1" class="clip acquisition-stage" data-start="0" data-duration="4.8" data-track-index="1">
+            <div class="cards-row">
+                <div id="canva-card" class="brand-card canva-theme">
+                    <span class="label-tag">Buyer</span>
+                    <span class="brand-name">CANVA</span>
+                </div>
+                
+                <!-- Arrow & Badge -->
+                <div class="arrow-svg">
+                    <div id="buying-1" class="buying-badge" style="opacity: 0;">BOUGHT</div>
+                    <svg viewBox="0 0 300 100" style="width: 100%; height: 100%;">
+                        <path id="path-1" class="arrow-path" d="M 20 50 L 280 50 M 260 30 L 280 50 L 260 70" />
+                    </svg>
+                </div>
+
+                <div id="cavalry-card" class="brand-card software-theme">
+                    <span class="label-tag">Software</span>
+                    <span class="brand-name">CAVALRY</span>
+                </div>
+            </div>
+
+            <!-- Free Reveal -->
+            <div id="reveal-1" class="free-section" style="opacity: 0; scale: 0.8;">
+                <div class="free-badge">FREE</div>
+                <div class="commercial-text">COMMERCIAL USE</div>
+            </div>
+        </div>
+
+        <!-- SCENE 2: MAXON + AUTOGRAPH -->
+        <div id="scene-2" class="clip acquisition-stage" data-start="5" data-duration="4" data-track-index="1">
+            <div class="cards-row">
+                <div id="maxon-card" class="brand-card maxon-theme">
+                    <span class="label-tag">Buyer</span>
+                    <span class="brand-name">MAXON</span>
+                </div>
+                
+                <!-- Arrow & Badge -->
+                <div class="arrow-svg">
+                    <div id="buying-2" class="buying-badge" style="opacity: 0;">BOUGHT</div>
+                    <svg viewBox="0 0 300 100" style="width: 100%; height: 100%;">
+                        <path id="path-2" class="arrow-path" d="M 20 50 L 280 50 M 260 30 L 280 50 L 260 70" />
+                    </svg>
+                </div>
+
+                <div id="autograph-card" class="brand-card software-theme">
+                    <span class="label-tag">Software</span>
+                    <span class="brand-name">AUTOGRAPH</span>
+                </div>
+            </div>
+
+            <!-- Free Reveal -->
+            <div id="reveal-2" class="free-section" style="opacity: 0; scale: 0.8;">
+                <div class="free-badge">FREE</div>
+                <div class="commercial-text">COMMERCIAL USE</div>
+            </div>
+        </div>
+
+        <!-- FINAL SECTION -->
+        <div id="bottom-section" class="clip bottom-section" data-start="0" data-duration="10" data-track-index="2">
+            <div id="huge-q" class="huge-q" style="opacity: 0;">?</div>
+            <div id="final-text" class="bottom-title"></div>
+        </div>
+
+    </div>
+
+    <script>
+        window.__timelines = window.__timelines || {};
+        const tl = gsap.timeline({ paused: true });
+        window.__timelines["main"] = tl;
+
+        // Visibility Control
+        const clips = document.querySelectorAll('.clip');
+        clips.forEach(clip => {
+            const start = parseFloat(clip.dataset.start);
+            const duration = parseFloat(clip.dataset.duration);
+            tl.set(clip, { autoAlpha: 1, visibility: 'visible' }, start);
+            tl.set(clip, { autoAlpha: 0, visibility: 'hidden' }, start + duration);
+        });
+
+        // --- GLOBAL BOTTOM SECTION ---
+        tl.to("#huge-q", { opacity: 0.1, duration: 2, ease: "power2.inOut" }, 1);
+        
+        // Typewriter & Final Reveal
+        const typeTarget = { text: "" };
+        const fullText = "WHAT IS HAPPENING HERE?";
+        
+        tl.to("#huge-q", { opacity: 1, scale: 1.1, duration: 0.8, ease: "back.out(2)" }, 8.0);
+        
+        // Typewriter Effect (Deterministic) - Starts at 5s and lasts 4s
+        tl.to({}, {
+            duration: 4.0,
+            onUpdate: function() {
+                const progress = this.ratio;
+                const charCount = Math.floor(progress * fullText.length);
+                document.getElementById('final-text').innerText = fullText.substring(0, charCount);
+            }
+        }, 5.0);
+
+        // Slight Bounce (Starts after initial typing and continues till end)
+        tl.to("#final-text", { y: -15, duration: 0.5, repeat: 9, yoyo: true, ease: "sine.inOut" }, 5.5);
+
+        // --- SCENE 1 ---
+        tl.from("#canva-card", { x: -300, autoAlpha: 0, duration: 1, ease: "power3.out" }, 0.2);
+        tl.from("#cavalry-card", { x: 300, autoAlpha: 0, duration: 1, ease: "power3.out" }, 0.4);
+        
+        // Arrow Drawing
+        tl.to("#path-1", { strokeDashoffset: 0, duration: 0.8, ease: "power2.inOut" }, 1.2);
+        tl.to("#buying-1", { opacity: 1, y: -10, duration: 0.4, ease: "back.out(2)" }, 1.5);
+        
+        // Highlight Acquisition
+        tl.to("#canva-card", { scale: 1.05, duration: 0.3 }, 1.8);
+        tl.to("#cavalry-card", { scale: 1.1, borderColor: "var(--canva)", duration: 0.5 }, 2.0);
+        
+        // Free Reveal (Lowered and prominent)
+        tl.to("#reveal-1", { opacity: 1, scale: 1, y: -20, duration: 0.6, ease: "elastic.out(1, 0.5)" }, 2.5);
+        
+        // --- SCENE 2 ---
+        tl.from("#maxon-card", { x: -300, autoAlpha: 0, duration: 1, ease: "power3.out" }, 5.2);
+        tl.from("#autograph-card", { x: 300, autoAlpha: 0, duration: 1, ease: "power3.out" }, 5.4);
+        
+        // Arrow Drawing
+        tl.to("#path-2", { strokeDashoffset: 0, duration: 0.8, ease: "power2.inOut" }, 6.2);
+        tl.to("#buying-2", { opacity: 1, y: -10, duration: 0.4, ease: "back.out(2)" }, 6.5);
+        
+        // Highlight Acquisition
+        tl.to("#maxon-card", { scale: 1.05, duration: 0.3 }, 6.8);
+        tl.to("#autograph-card", { scale: 1.1, borderColor: "var(--maxon)", duration: 0.5 }, 7.0);
+        
+        // Free Reveal
+        tl.to("#reveal-2", { opacity: 1, scale: 1, y: -20, duration: 0.6, ease: "elastic.out(1, 0.5)" }, 7.5);
+
+        // --- FINAL ---
+    </script>
+</body>
+</html>
