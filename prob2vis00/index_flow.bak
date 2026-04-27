@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1080, height=1920">
+    <title>Password Complexity Visualizer</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --surface: #0f172a;
+            --accent-cyan: #22d3ee;
+            --accent-red: #f43f5e;
+            --accent-orange: #fb923c;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 1080px;
+            height: 1920px;
+            background: var(--bg);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+        #root {
+            width: 1080px;
+            height: 1920px;
+            position: relative;
+            background: 
+                radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
+        }
+
+        /* Grid Background */
+        .grid-bg {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 60px 60px;
+            opacity: 0.3;
+            mask-image: radial-gradient(circle at 50% 50%, black 30%, transparent 80%);
+        }
+
+        .clip {
+            position: absolute;
+            opacity: 0;
+        }
+
+        /* Header */
+        .header {
+            top: 100px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 64px;
+            font-weight: 800;
+            letter-spacing: -2px;
+            background: linear-gradient(to bottom, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            font-size: 24px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-top: 10px;
+        }
+
+        /* Input Card */
+        .input-container {
+            top: 250px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 220px;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .input-label {
+            font-size: 18px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+
+        .password-display {
+            font-family: 'Fira Code', monospace;
+            font-size: 72px;
+            color: var(--accent-cyan);
+            height: 80px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .cursor {
+            width: 4px;
+            height: 60px;
+            background: var(--accent-cyan);
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        /* Flow Chart Area */
+        .flow-area {
+            top: 550px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 900px;
+            height: 900px;
+        }
+
+        .node {
+            position: absolute;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 20px 30px;
+            text-align: center;
+            z-index: 2;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .node.active {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 30px rgba(34, 211, 238, 0.2);
+            transform: scale(1.05);
+        }
+
+        .node-title {
+            font-size: 16px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .node-value {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        /* Decision Diamonds (simplified as nodes with different style) */
+        .decision {
+            width: 200px;
+            height: 200px;
+            background: #1e293b;
+            transform: rotate(45deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+        }
+
+        .decision-content {
+            transform: rotate(-45deg);
+            text-align: center;
+        }
+
+        /* Result Cards */
+        .result-card {
+            width: 200px;
+            padding: 40px;
+            border-radius: 20px;
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .result-card.active-vweak { border-color: var(--accent-red); background: rgba(244, 63, 94, 0.1); }
+        .result-card.active-weak { border-color: var(--accent-orange); background: rgba(251, 146, 60, 0.1); }
+        .result-card.active-strong { border-color: var(--accent-blue); background: rgba(59, 130, 246, 0.1); }
+        .result-card.active-vstrong { border-color: var(--accent-green); background: rgba(16, 185, 129, 0.1); }
+
+        .result-title { font-size: 36px; font-weight: 800; }
+        .result-desc { font-size: 14px; color: var(--text-dim); }
+
+        /* SVG Connections */
+        .svg-connections {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+        }
+
+        .path-bg {
+            fill: none;
+            stroke: var(--border);
+            stroke-width: 4;
+            stroke-dasharray: 10 10;
+        }
+
+        .path-active {
+            fill: none;
+            stroke: var(--accent-cyan);
+            stroke-width: 6;
+            stroke-linecap: round;
+            /* Removed drop-shadow to prevent rendering glitches during animation */
+            will-change: stroke-dashoffset;
+        }
+
+        /* Footer / Output */
+        .output-panel {
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 250px;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.4));
+            border: 1px solid var(--border);
+            border-radius: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .final-label {
+            font-size: 20px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 5px;
+        }
+
+        .final-status {
+            font-size: 96px;
+            font-weight: 800;
+            margin-top: 10px;
+            letter-spacing: -2px;
+        }
+
+        .status-vweak { color: var(--accent-red); }
+        .status-weak { color: var(--accent-orange); }
+        .status-strong { color: var(--accent-blue); }
+        .status-vstrong { color: var(--accent-green); }
+
+    </style>
+</head>
+<body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="15" data-width="1080" data-height="1920">
+        <div class="grid-bg"></div>
+
+        <!-- Header -->
+        <div class="header clip" data-start="0" data-duration="15" data-track-index="1">
+            <h1>Password Analysis</h1>
+            <p>Security Classification Logic</p>
+        </div>
+
+        <!-- Input Section -->
+        <div class="input-container clip" data-start="0.5" data-duration="14.5" data-track-index="2">
+            <div class="input-label">Scanning Input Buffer</div>
+            <div class="password-display">
+                <span id="pass-val"></span>
+                <div class="cursor"></div>
+            </div>
+        </div>
+
+        <!-- Flow Chart Area -->
+        <div class="flow-area clip" data-start="1" data-duration="14" data-track-index="3">
+            <svg class="svg-connections" viewBox="0 0 900 900">
+                <!-- BG Paths -->
+                <path class="path-bg" d="M 450 0 L 450 100 M 450 100 L 237.5 100 L 237.5 300 M 450 100 L 662.5 100 L 662.5 300" />
+                <path class="path-bg" d="M 237.5 400 L 125 400 L 125 600 M 237.5 400 L 350 400 L 350 600" />
+                <path class="path-bg" d="M 662.5 400 L 550 400 L 550 600 M 662.5 400 L 775 400 L 775 600" />
+                
+                <!-- Active Paths -->
+                <path id="path-root" class="path-active" d="M 450 0 L 450 100" />
+                
+                <!-- Branch Short -->
+                <path id="path-short" class="path-active" d="M 450 100 L 237.5 100 L 237.5 300" />
+                <path id="path-to-vweak" class="path-active" d="M 237.5 400 L 125 400 L 125 600" />
+                <path id="path-to-weak" class="path-active" d="M 237.5 400 L 350 400 L 350 600" />
+                
+                <!-- Branch Long -->
+                <path id="path-long" class="path-active" d="M 450 100 L 662.5 100 L 662.5 300" />
+                <path id="path-to-strong" class="path-active" d="M 662.5 400 L 550 400 L 550 600" />
+                <path id="path-to-vstrong" class="path-active" d="M 662.5 400 L 775 400 L 775 600" />
+            </svg>
+
+            <!-- Main Decision -->
+            <div id="node-length" class="node" style="top: 300px; left: 50%; transform: translateX(-50%); width: 200px;">
+                <div class="node-title">Primary Check</div>
+                <div class="node-value">Length &ge; 8?</div>
+            </div>
+
+            <!-- Sub Decisions -->
+            <div id="node-chars-short" class="node" style="top: 300px; left: 137.5px; width: 200px;">
+                <div class="node-title">Type Check</div>
+                <div class="node-value">Only Numbers?</div>
+            </div>
+
+            <div id="node-chars-long" class="node" style="top: 300px; left: 562.5px; width: 200px;">
+                <div class="node-title">Type Check</div>
+                <div class="node-value">Has Special?</div>
+            </div>
+
+            <!-- Endpoint Nodes -->
+            <div id="card-vweak" class="node result-card" style="top: 600px; left: 25px;">
+                <div class="result-title">Very Weak</div>
+                <div class="result-desc">Only Numbers<br>&lt; 8 Characters</div>
+            </div>
+            <div id="card-weak" class="node result-card" style="top: 600px; left: 250px;">
+                <div class="result-title">Weak</div>
+                <div class="result-desc">Only Letters<br>&lt; 8 Characters</div>
+            </div>
+            <div id="card-strong" class="node result-card" style="top: 600px; left: 450px;">
+                <div class="result-title">Strong</div>
+                <div class="result-desc">Letters + Numbers<br>&ge; 8 Characters</div>
+            </div>
+            <div id="card-vstrong" class="node result-card" style="top: 600px; left: 675px;">
+                <div class="result-title">Very Strong</div>
+                <div class="result-desc">All + Special<br>&ge; 8 Characters</div>
+            </div>
+        </div>
+
+        <!-- Output Panel -->
+        <div class="output-panel clip" data-start="1.5" data-duration="13.5" data-track-index="4">
+            <div class="final-label">Classification Result</div>
+            <div id="status-val" class="final-status">ANALYZING...</div>
+        </div>
+
+    </div>
+
+    <script>
+        window.__timelines = window.__timelines || {};
+        const tl = gsap.timeline({ paused: true });
+        window.__timelines["main"] = tl;
+
+        const passVal = document.getElementById('pass-val');
+        const statusVal = document.getElementById('status-val');
+
+        // Map to store exact path lengths
+        const pathLengths = {};
+
+        function typeText(text, startTime, element) {
+            tl.to({}, {
+                duration: text.length * 0.1,
+                onStart: () => { element.textContent = ""; },
+                onUpdate: function() {
+                    const progress = this.progress();
+                    const chars = Math.floor(progress * text.length);
+                    element.textContent = text.slice(0, chars);
+                }
+            }, startTime);
+        }
+
+        // Initialize paths with exact lengths to prevent glitches
+        document.querySelectorAll('.path-active').forEach(path => {
+            const length = Math.ceil(path.getTotalLength());
+            pathLengths[path.id] = length;
+            gsap.set(path, { strokeDasharray: length, strokeDashoffset: length });
+        });
+
+        function resetPaths(startTime) {
+            Object.keys(pathLengths).forEach(id => {
+                tl.set(`#${id}`, { strokeDashoffset: pathLengths[id] }, startTime);
+            });
+        }
+
+        // --- TIMELINE DEFINITION ---
+
+        // 0. Intro
+        tl.to(".clip", { opacity: 1, stagger: 0.2, duration: 1 }, 0);
+
+        // --- SCENARIO 1: VERY WEAK (12345) ---
+        const s1 = 1.5;
+        resetPaths(s1);
+        tl.set(".node", { className: "node" }, s1);
+        tl.set(".result-card", { className: "node result-card" }, s1);
+        tl.set(statusVal, { textContent: "ANALYZING...", className: "final-status" }, s1);
+        
+        typeText("12345", s1 + 0.2, passVal);
+        
+        tl.to("#path-root", { strokeDashoffset: 0, duration: 0.4, ease: "none" }, s1 + 1);
+        tl.to("#path-short", { strokeDashoffset: 0, duration: 0.5, ease: "none" }, s1 + 1.4);
+        tl.to("#node-chars-short", { className: "node active", duration: 0.3 }, s1 + 1.9);
+        tl.to("#path-to-vweak", { strokeDashoffset: 0, duration: 0.4, ease: "none" }, s1 + 2.2);
+        tl.to("#card-vweak", { className: "node result-card active-vweak", duration: 0.3 }, s1 + 2.6);
+        tl.to(statusVal, { 
+            onStart: () => { 
+                statusVal.textContent = "VERY WEAK"; 
+                statusVal.classList.add("status-vweak");
+            }, 
+            duration: 0.1 
+        }, s1 + 2.8);
+
+        // --- SCENARIO 2: WEAK (secret) ---
+        const s2 = 5;
+        resetPaths(s2);
+        tl.set(".node", { className: "node" }, s2);
+        tl.set(".result-card", { className: "node result-card" }, s2);
+        tl.set(statusVal, { textContent: "ANALYZING...", className: "final-status" }, s2);
+        
+        typeText("secret", s2 + 0.2, passVal);
+
+        tl.to("#path-root", { strokeDashoffset: 0, duration: 0.4, ease: "none" }, s2 + 1);
+        tl.to("#path-short", { strokeDashoffset: 0, duration: 0.5, ease: "none" }, s2 + 1.4);
+        tl.to("#node-chars-short", { className: "node active", duration: 0.3 }, s2 + 1.9);
+        tl.to("#path-to-weak", { strokeDashoffset: 0, duration: 0.4, ease: "none" }, s2 + 2.2);
+        tl.to("#card-weak", { className: "node result-card active-weak", duration: 0.3 }, s2 + 2.6);
+        tl.to(statusVal, { 
+            onStart: () => { 
+                statusVal.textContent = "WEAK"; 
+                statusVal.classList.add("status-weak");
+            }, 
+            duration: 0.1 
+        }, s2 + 2.8);
+
+        // --- SCENARIO 3: STRONG (SecurePass1) ---
+        const s3 = 8.5;
+        resetPaths(s3);
+        tl.set(".node", { className: "node" }, s3);
+        tl.set(".result-card", { className: "node result-card" }, s3);
+        tl.set(statusVal, { textContent: "ANALYZING...", className: "final-status" }, s3);
+        
+        typeText("SecurePass1", s3 + 0.2, passVal);
+
+        tl.to("#path-root", { strokeDashoffset: 0, duration: 0.4, ease: "none" }, s3 + 1);
+        tl.to("#path-long", { strokeDashoffset: 0, duration: 0.5, ease: "none" }, s3 + 1.4);
+        tl.to("#node-chars-long", { className: "node active", duration: 0.3 }, s3 + 1.9);
+        tl.to("#path-to-strong", { strokeDashoffset: 0, duration: 0.4, ease: "none" }, s3 + 2.2);
+        tl.to("#card-strong", { className: "node result-card active-strong", duration: 0.3 }, s3 + 2.6);
+        tl.to(statusVal, { 
+            onStart: () => { 
+                statusVal.textContent = "STRONG"; 
+                statusVal.classList.add("status-strong");
+            }, 
+            duration: 0.1 
+        }, s3 + 2.8);
+
+        // --- SCENARIO 4: VERY STRONG (P@ssw0rd!23) ---
+        const s4 = 12;
+        resetPaths(s4);
+        tl.set(".node", { className: "node" }, s4);
+        tl.set(".result-card", { className: "node result-card" }, s4);
+        tl.set(statusVal, { textContent: "ANALYZING...", className: "final-status" }, s4);
+        
+        typeText("P@ssw0rd!23", s4 + 0.1, passVal);
+
+        tl.to("#path-root", { strokeDashoffset: 0, duration: 0.4, ease: "none" }, s4 + 1);
+        tl.to("#path-long", { strokeDashoffset: 0, duration: 0.5, ease: "none" }, s4 + 1.4);
+        tl.to("#node-chars-long", { className: "node active", duration: 0.3 }, s4 + 1.9);
+        tl.to("#path-to-vstrong", { strokeDashoffset: 0, duration: 0.4, ease: "none" }, s4 + 2.2);
+        tl.to("#card-vstrong", { className: "node result-card active-vstrong", duration: 0.3 }, s4 + 2.6);
+        tl.to(statusVal, { 
+            onStart: () => { 
+                statusVal.textContent = "VERY STRONG"; 
+                statusVal.classList.add("status-vstrong");
+            }, 
+            duration: 0.1 
+        }, s4 + 2.8);
+
+    </script>
+</body>
+</html>
