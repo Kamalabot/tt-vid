@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=1920, height=1080" />
-  <title>Event-Driven Architecture: The Broker</title>
+  <title>Event-Driven Architecture: The Last Leg</title>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
   <style>
@@ -13,9 +13,9 @@
       --broker-color: #ff2d55;
       --event-color: #00f2fe;
       --success-color: #38ef7d;
-      --error-color: #ff4b2b;
       --text-main: #ffffff;
       --text-dim: #a0aabf;
+      --shipping-color: #f7b731;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -29,21 +29,31 @@
       position: absolute; top: 0; left: 0; width: 1920px; height: 1080px;
     }
 
+    .bg-grid {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 80px 80px;
+      pointer-events: none;
+    }
+
     .title-container {
-      position: absolute; top: 80px; width: 100%; text-align: center;
-      z-index: 10;
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 10;
     }
 
     .title {
+      position: absolute; top: 80px; width: 100%; text-align: center;
       font-size: 72px; font-weight: 800; letter-spacing: -2px;
       background: linear-gradient(135deg, #fff 0%, #a0aabf 100%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      margin-bottom: 10px;
     }
 
     .subtitle {
+      position: absolute; top: 180px; width: 100%; text-align: center;
       font-size: 32px; font-weight: 300; color: var(--text-dim);
-      max-width: 1000px; margin: 0 auto; line-height: 1.4;
+      line-height: 1.4;
     }
 
     /* Node Styles */
@@ -53,7 +63,7 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 32px; backdrop-filter: blur(20px);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      box-shadow: 0 30px 60px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.5);
       z-index: 5;
     }
 
@@ -62,29 +72,28 @@
       display: flex; align-items: center; justify-content: center;
     }
 
-    .node-label { font-size: 28px; font-weight: 600; letter-spacing: 0.5px; }
-    .node-status { font-size: 18px; color: var(--text-dim); margin-top: 8px; font-weight: 400; }
+    .node-label { font-size: 28px; font-weight: 600; }
+    .node-status { font-size: 18px; color: var(--text-dim); margin-top: 8px; }
 
-    /* The Broker - Heart of the System */
+    /* Local DB Indicator */
+    .db-indicator {
+      position: absolute; bottom: 20px; right: 20px;
+      width: 30px; height: 30px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 800;
+    }
+    .db-updated { background: var(--success-color); border-color: var(--success-color); color: #000; }
+
+    /* The Broker */
     .broker-container {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      width: 450px; height: 450px; display: flex; align-items: center; justify-content: center;
+      position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%);
+      width: 300px; height: 300px; display: flex; align-items: center; justify-content: center;
     }
-
     .broker-core {
-      width: 240px; height: 240px; background: radial-gradient(circle, var(--broker-color) 0%, transparent 70%);
-      border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 100px rgba(255, 45, 85, 0.4);
-    }
-
-    .broker-ring {
-      position: absolute; width: 100%; height: 100%;
-      border: 2px solid rgba(255, 45, 85, 0.2); border-radius: 50%;
-    }
-
-    .broker-label {
-      position: absolute; bottom: -60px; font-size: 36px; font-weight: 800;
-      color: var(--broker-color); text-transform: uppercase; letter-spacing: 4px;
+      width: 180px; height: 180px; background: radial-gradient(circle, var(--broker-color) 0%, transparent 70%);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 80px rgba(255, 45, 85, 0.3);
     }
 
     /* Event Paths */
@@ -92,111 +101,115 @@
       position: absolute; top: 0; left: 0; width: 1920px; height: 1080px;
       pointer-events: none; z-index: 1;
     }
-
     .connection-line {
       fill: none; stroke: rgba(255, 255, 255, 0.05); stroke-width: 3;
       stroke-dasharray: 10, 10;
     }
 
+    /* Shipping Label */
+    .shipping-label {
+      position: absolute; width: 120px; height: 160px;
+      background: #fff; border-radius: 4px; padding: 10px;
+      display: flex; flex-direction: column; gap: 5px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+      opacity: 0; transform: scale(0.5);
+      z-index: 6;
+    }
+    .label-line { height: 4px; background: #eee; border-radius: 2px; }
+    .label-line.black { background: #333; }
+    .barcode { height: 30px; background: repeating-linear-gradient(90deg, #333, #333 2px, #fff 2px, #fff 4px); margin-top: auto; }
+
+    /* Particles */
     .event-particle {
       width: 20px; height: 20px; background: var(--event-color);
       border-radius: 50%; position: absolute;
-      box-shadow: 0 0 20px var(--event-color), 0 0 40px var(--event-color);
-      display: none; z-index: 10;
+      box-shadow: 0 0 20px var(--event-color);
+      z-index: 10;
     }
 
-    /* Floating Event Labels */
-    .event-tag {
-      position: absolute; padding: 10px 20px; background: #fff; color: #000;
-      border-radius: 12px; font-weight: 800; font-size: 18px;
-      transform: translate(-50%, -50%); opacity: 0; pointer-events: none;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 11;
+    /* Conclusion Web */
+    .web-container {
+      position: absolute; width: 100%; height: 100%;
     }
-
-    /* Specific Node Positions */
-    #order-service { left: 200px; top: 430px; border-color: rgba(0, 242, 254, 0.3); }
-    #inventory-service { right: 200px; top: 180px; }
-    #payment-service { right: 200px; top: 430px; }
-    #notification-service { right: 200px; top: 680px; }
-
-    .status-offline { color: var(--error-color) !important; font-weight: 800; }
-    .node-offline { border-color: var(--error-color) !important; background: rgba(255, 75, 43, 0.1) !important; }
-
-    /* Particles/Glow Effects */
-    .glow-overlay {
+    .mini-node {
+      position: absolute; width: 60px; height: 60px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px; display: flex; align-items: center; justify-content: center;
+      z-index: 52;
+    }
+    .web-svg {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: radial-gradient(circle at 50% 50%, rgba(255, 45, 85, 0.05) 0%, transparent 60%);
-      pointer-events: none;
+      pointer-events: none; z-index: 51;
+    }
+    .web-line {
+      fill: none; stroke: rgba(255, 255, 255, 0.05); stroke-width: 1;
+    }
+    .web-pulse {
+      width: 6px; height: 6px; background: var(--event-color);
+      border-radius: 50%; position: absolute;
+      box-shadow: 0 0 10px var(--event-color);
+      z-index: 53; opacity: 0;
     }
 
-    .bg-grid {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background-image: 
-        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-      background-size: 60px 60px;
-      pointer-events: none;
+    #payment-node { left: 300px; top: 530px; }
+    #shipping-node { right: 300px; top: 530px; border-color: rgba(247, 183, 49, 0.3); }
+    #inventory-node { left: 300px; top: 280px; opacity: 0.5; }
+    #notification-node { left: 300px; top: 780px; opacity: 0.5; }
+
+    /* User App Node for Finale */
+    .user-app-mini {
+      position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+      width: 300px; height: 120px; background: rgba(56, 239, 125, 0.1);
+      border: 2px solid var(--success-color); border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      gap: 15px; z-index: 100; box-shadow: 0 0 30px rgba(56, 239, 125, 0.2);
     }
+
   </style>
 </head>
 <body>
-  <div id="root" data-composition-id="broker-viz" data-start="0" data-duration="60" data-width="1920" data-height="1080">
+  <div id="root" data-composition-id="final-leg" data-start="0" data-duration="60" data-width="1920" data-height="1080">
     
     <div class="bg-grid"></div>
-    <div class="glow-overlay"></div>
 
     <div class="title-container">
-      <div class="title" id="main-title">The Event Broker</div>
-      <div class="subtitle" id="main-subtitle">The heart of a decoupled system.</div>
+      <div class="title" id="main-title">The Final Handshake</div>
+      <div class="subtitle" id="main-subtitle">Reaching the warehouse and beyond.</div>
     </div>
 
     <!-- SVGs for Paths -->
-    <div class="clip" data-start="11" data-duration="49" data-track-index="10">
+    <div class="clip" data-start="0" data-duration="40" data-track-index="10">
       <svg class="path-svg">
-        <defs>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-            <feMerge>
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
-        </defs>
-        <!-- Connection Paths -->
-        <path id="path-order-broker" class="connection-line" d="M 540 540 L 840 540" />
-        <path id="path-broker-inventory" class="connection-line" d="M 1080 540 C 1200 540, 1250 290, 1380 290" />
-        <path id="path-broker-payment" class="connection-line" d="M 1080 540 L 1380 540" />
-        <path id="path-broker-notification" class="connection-line" d="M 1080 540 C 1200 540, 1250 790, 1380 790" />
+        <path id="path-pay-broker" class="connection-line" d="M 640 648 L 810 648" />
+        <path id="path-broker-ship" class="connection-line" d="M 1110 648 L 1280 648" />
       </svg>
     </div>
 
     <!-- The Broker -->
-    <div class="clip broker-container" data-start="0" data-duration="60" data-track-index="1">
+    <div class="clip broker-container" data-start="0" data-duration="45" data-track-index="1">
       <div class="broker-core" id="broker-core">
-        <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5">
-          <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z" stroke-opacity="0.2"/>
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5">
+          <circle cx="12" cy="12" r="9" stroke-opacity="0.2"/>
           <path d="M12 7v10M7 12h10" stroke-linecap="round"/>
-          <circle cx="12" cy="12" r="3" fill="white"/>
         </svg>
       </div>
-      <div class="broker-ring" id="ring-1"></div>
-      <div class="broker-ring" id="ring-2"></div>
-      <div class="broker-label">BROKER</div>
     </div>
 
-    <!-- Nodes -->
-    <div class="clip node" id="order-service" data-start="5" data-duration="55" data-track-index="2">
+    <!-- Payment Service -->
+    <div class="clip node" id="payment-node" data-start="0" data-duration="45" data-track-index="2">
       <div class="node-icon">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
-          <path d="M3 6h18M16 10a4 4 0 0 1-8 0"/>
+          <rect x="2" y="5" width="20" height="14" rx="2"/>
+          <path d="M2 10h20"/>
         </svg>
       </div>
-      <div class="node-label">Order Service</div>
-      <div class="node-status" id="order-status">Idle</div>
+      <div class="node-label">Payment Service</div>
+      <div class="node-status" id="pay-status">Charged ✓</div>
+      <div class="db-indicator db-updated">DB</div>
     </div>
 
-    <div class="clip node" id="inventory-service" data-start="8" data-duration="52" data-track-index="3">
+    <!-- Inventory Service (Background context) -->
+    <div class="clip node" id="inventory-node" data-start="0" data-duration="40" data-track-index="4">
       <div class="node-icon">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
           <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
@@ -204,47 +217,61 @@
         </svg>
       </div>
       <div class="node-label">Inventory</div>
-      <div class="node-status" id="inv-status">Listening...</div>
+      <div class="node-status">Stock Updated ✓</div>
+      <div class="db-indicator db-updated">DB</div>
     </div>
 
-    <div class="clip node" id="payment-service" data-start="9" data-duration="51" data-track-index="4">
+    <!-- Notification Service (Background context) -->
+    <div class="clip node" id="notification-node" data-start="0" data-duration="40" data-track-index="5">
       <div class="node-icon">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-          <rect x="2" y="5" width="20" height="14" rx="2"/>
-          <path d="M2 10h20"/>
-        </svg>
-      </div>
-      <div class="node-label">Payment</div>
-      <div class="node-status" id="pay-status">Listening...</div>
-    </div>
-
-    <div class="clip node" id="notification-service" data-start="10" data-duration="50" data-track-index="5">
-      <div class="node-icon">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-          <path d="m22 2-7 20-4-9-9-4Z"/>
-          <path d="M22 2 11 13"/>
+          <path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>
         </svg>
       </div>
       <div class="node-label">Notification</div>
-      <div class="node-status" id="notif-status">Listening...</div>
+      <div class="node-status">Email Sent ✓</div>
+      <div class="db-indicator db-updated">DB</div>
+    </div>
+
+    <!-- Shipping Service -->
+    <div class="clip node" id="shipping-node" data-start="11" data-duration="29" data-track-index="3">
+      <div class="node-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <path d="M10 17h4V5H2v12h3m1 0h4m5 0h4m1 0h3v-6.5L16.5 5H14m0 12h-4"/>
+          <circle cx="7.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="17.5" r="2.5"/>
+        </svg>
+      </div>
+      <div class="node-label">Shipping Service</div>
+      <div class="node-status" id="ship-status">Waiting...</div>
+      <div class="db-indicator" id="ship-db">DB</div>
+
+      <!-- Shipping Label (Inner for relative pos) -->
+      <div class="shipping-label" id="label" style="top: -100px; left: 110px;">
+        <div class="label-line black"></div>
+        <div class="label-line"></div>
+        <div class="label-line"></div>
+        <div class="label-line black"></div>
+        <div class="barcode"></div>
+      </div>
     </div>
 
     <!-- Event Particles -->
-    <div class="clip event-particle" id="p-order" data-start="20" data-duration="2" data-track-index="20"></div>
-    <div class="clip event-particle" id="p-inv" data-start="22" data-duration="2" data-track-index="21"></div>
-    <div class="clip event-particle" id="p-pay" data-start="22" data-duration="2" data-track-index="22"></div>
-    <div class="clip event-particle" id="p-notif" data-start="22" data-duration="2" data-track-index="23"></div>
+    <div class="clip event-particle" id="p-pay-confirm" data-start="10" data-duration="2" data-track-index="20"></div>
+    <div class="clip event-particle" id="p-ship-start" data-start="12" data-duration="2" data-track-index="21"></div>
 
-    <!-- Resilience Particles -->
-    <div class="clip event-particle" id="p-order-2" data-start="53" data-duration="2" data-track-index="24"></div>
-    <div class="clip event-particle" id="p-inv-2" data-start="55" data-duration="2" data-track-index="25"></div>
-    <div class="clip event-particle" id="p-pay-2" data-start="55" data-duration="2" data-track-index="26"></div>
-
-    <!-- Event Tags -->
-    <div class="clip event-tag" id="tag-order" data-start="20" data-duration="2" data-track-index="30">ORDER PLACED</div>
-    <div class="clip event-tag" id="tag-inv" data-start="24" data-duration="2" data-track-index="31">-1 STOCK</div>
-    <div class="clip event-tag" id="tag-pay" data-start="24" data-duration="2" data-track-index="32">CHARGE BANK</div>
-    <div class="clip event-tag" id="tag-notif" data-start="24" data-duration="2" data-track-index="33">SEND EMAIL</div>
+    <!-- Conclusion Web -->
+    <div class="clip web-container" id="conclusion-web" data-start="40" data-duration="20" data-track-index="50">
+      <svg class="web-svg" id="web-connections"></svg>
+      <div id="web-nodes"></div>
+      
+      <!-- Persistent Unblocked Customer App -->
+      <div class="user-app-mini">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#38ef7d" stroke-width="3">
+          <path d="M20 6L9 17l-5-5"/>
+        </svg>
+        <div style="color:#38ef7d; font-weight:800; font-size:24px;">APP RESPONSIVE</div>
+      </div>
+    </div>
 
   </div>
 
@@ -252,12 +279,10 @@
     window.__timelines = window.__timelines || {};
     const tl = gsap.timeline({ paused: true });
 
-    // Helper to animate along path
     function animateAlongPath(particleId, pathId, duration, startTime) {
       const path = document.querySelector(pathId);
       const pathLength = path.getTotalLength();
       const obj = { distance: 0 };
-      
       tl.set(particleId, { display: 'block', opacity: 1 }, startTime);
       tl.to(obj, {
         distance: pathLength,
@@ -272,118 +297,147 @@
     }
 
     // --- 0-10s: Introduction ---
-    tl.from("#main-title", { opacity: 0, y: -50, duration: 1.5 }, 0.5);
-    tl.from("#main-subtitle", { opacity: 0, y: -20, duration: 1.5 }, 1.0);
-    
-    // Pulse the Broker Core
+    tl.from("#payment-node", { x: -100, opacity: 0, duration: 1 }, 0.5);
+    tl.from("#broker-core", { scale: 0, duration: 1, overwrite: "auto" }, 1.0);
     tl.to("#broker-core", { scale: 1.1, repeat: 39, yoyo: true, duration: 1.5, ease: "sine.inOut" }, 0);
-    tl.from(".broker-ring", { scale: 0.5, opacity: 0, stagger: 0.5, duration: 2 }, 0);
-    tl.to("#ring-1", { scale: 1.5, opacity: 0, repeat: 19, duration: 3, ease: "power1.out" }, 0);
-    tl.to("#ring-2", { scale: 1.8, opacity: 0, repeat: 14, duration: 4, ease: "power1.out" }, 1);
-
-    // --- 5-15s: Services Appear & Connection ---
-    tl.from("#order-service", { x: -100, opacity: 0, duration: 1 }, 5);
-    tl.from("#inventory-service", { x: 100, opacity: 0, duration: 1 }, 8);
-    tl.from("#payment-service", { x: 100, opacity: 0, duration: 1 }, 9);
-    tl.from("#notification-service", { x: 100, opacity: 0, duration: 1 }, 10);
     
-    tl.to(".connection-line", { strokeDashoffset: 0, opacity: 1, duration: 2, stagger: 0.3 }, 11);
-    tl.set(".connection-line", { strokeDasharray: "10, 10", strokeDashoffset: 100 }, 0); // Setup
-    tl.to(".connection-line", { strokeDashoffset: 0, duration: 20, ease: "none", repeat: 2 }, 13);
+    tl.set("#main-subtitle", { innerHTML: "Finally, we reach the warehouse." }, 2);
 
-    tl.set("#main-subtitle", { innerHTML: "Instead of calling departments one by one,<br>they all 'listen' to the stream." }, 12);
-
-    // --- 20-35s: The Event Flow ---
-    // Event 1: Order Placed
-    tl.set("#main-subtitle", { innerHTML: "As soon as an 'Order Placed' event hits the stream..." }, 18);
+    // --- 10-20s: Payment Emits Event ---
+    tl.set("#main-subtitle", { innerHTML: "Once payment is successful, it emits its own event:<br><span style='color:var(--event-color)'>'Payment Confirmed'</span>" }, 8);
     
-    // Order Service fires
-    tl.to("#order-service", { scale: 1.05, borderColor: "var(--event-color)", duration: 0.3 }, 20);
-    tl.set("#order-status", { innerHTML: "Publishing...", color: "var(--event-color)" }, 20);
+    tl.to("#payment-node", { scale: 1.05, borderColor: "var(--event-color)", duration: 0.3 }, 10);
+    animateAlongPath("#p-pay-confirm", "#path-pay-broker", 1.2, 10.3);
+    tl.to("#payment-node", { scale: 1, borderColor: "rgba(255,255,255,0.1)", duration: 0.3 }, 11.5);
+
+    tl.to("#broker-core", { scale: 1.3, backgroundColor: "var(--event-color)", duration: 0.3, overwrite: "auto" }, 11.5);
+    tl.to("#broker-core", { scale: 1, backgroundColor: "transparent", duration: 0.5, overwrite: "auto" }, 12.2);
+
+    // --- 12-30s: Shipping Action ---
+    tl.from("#shipping-node", { x: 100, opacity: 0, duration: 1 }, 12);
+    tl.set("#main-subtitle", { innerHTML: "The Shipping Service sees this event and springs into action." }, 13);
+
+    animateAlongPath("#p-ship-start", "#path-broker-ship", 1.2, 13.5);
     
-    animateAlongPath("#p-order", "#path-order-broker", 1.5, 20.3);
-    tl.to("#tag-order", { opacity: 1, y: -40, duration: 0.5 }, 20.5);
-    tl.to("#tag-order", { opacity: 0, y: -80, duration: 0.5 }, 21.5);
-    tl.set("#tag-order", { opacity: 0 }, 22.0);
+    tl.to("#shipping-node", { scale: 1.05, borderColor: "var(--shipping-color)", duration: 0.4 }, 14.5);
+    tl.set("#ship-status", { innerHTML: "Processing...", color: "var(--shipping-color)" }, 14.5);
+
+    // Label Print
+    tl.to("#label", { opacity: 1, scale: 1, y: 50, duration: 0.8, ease: "back.out(1.7)" }, 16);
+    tl.set("#ship-status", { innerHTML: "Label Printed!", color: "var(--success-color)" }, 17.5);
     
-    tl.to("#order-service", { scale: 1, borderColor: "rgba(255,255,255,0.1)", duration: 0.3 }, 22);
-    tl.set("#order-status", { innerHTML: "Success!", color: "var(--success-color)" }, 22);
-
-    // Broker receives and fans out
-    tl.to("#broker-core", { scale: 1.4, backgroundColor: "var(--event-color)", duration: 0.3, overwrite: "auto" }, 21.8);
-    tl.to("#broker-core", { scale: 1, backgroundColor: "transparent", duration: 0.5, overwrite: "auto" }, 22.5);
-
-    tl.set("#main-subtitle", { innerHTML: "Three things happen at once, in parallel." }, 23);
-
-    // Parallel fan out with slight staggered delay
-    animateAlongPath("#p-inv", "#path-broker-inventory", 1.2, 22.8);
-    animateAlongPath("#p-pay", "#path-broker-payment", 1.2, 23.1);
-    animateAlongPath("#p-notif", "#path-broker-notification", 1.2, 23.4);
-
-    // Services react with staggered delays
-    tl.to("#inventory-service", { borderColor: "var(--event-color)", scale: 1.05, duration: 0.4 }, 24.0);
-    tl.set("#inv-status", { innerHTML: "Updating Stock...", color: "var(--event-color)" }, 24.0);
+    tl.set("#main-subtitle", { innerHTML: "It prints a label and assigns a carrier.<br>The system has reached <span style='color:var(--success-color)'>Eventual Consistency</span>." }, 19);
     
-    tl.to("#payment-service", { borderColor: "var(--event-color)", scale: 1.05, duration: 0.4 }, 24.4);
-    tl.set("#pay-status", { innerHTML: "Contacting Bank...", color: "var(--event-color)" }, 24.4);
+    tl.to("#ship-db", { className: "db-indicator db-updated", duration: 0.3 }, 21);
+    tl.to("#shipping-node", { scale: 1, borderColor: "var(--success-color)", duration: 0.5 }, 22);
+
+    // --- 25-40s: Eventual Consistency Explanation ---
+    tl.set("#main-title", { innerHTML: "Eventual Consistency" }, 25);
+    tl.set("#main-subtitle", { innerHTML: "Every service has updated its own local database at its own pace." }, 25);
+
+    // Show all DB indicators updating across nodes to fill time
+    tl.to(".db-indicator", { scale: 1.4, duration: 0.3, repeat: 10, yoyo: true, stagger: 0.2 }, 27);
+    tl.to("#inventory-node", { opacity: 1, scale: 1.05, duration: 1 }, 30);
+    tl.to("#notification-node", { opacity: 1, scale: 1.05, duration: 1 }, 32);
     
-    tl.to("#notification-service", { borderColor: "var(--event-color)", scale: 1.05, duration: 0.4 }, 24.8);
-    tl.set("#notif-status", { innerHTML: "Preparing Email...", color: "var(--event-color)" }, 24.8);
+    tl.set("#main-subtitle", { innerHTML: "By moving from a single line of logic to a web of reacting events..." }, 34);
+    tl.set("#main-subtitle", { innerHTML: "We've built a system that is faster and scales infinitely." }, 37);
 
-    // Tags show actions with stagger
-    tl.to("#tag-inv", { opacity: 1, y: -50, duration: 0.5 }, 24.5);
-    tl.to("#tag-pay", { opacity: 1, y: -50, duration: 0.5 }, 25.0);
-    tl.to("#tag-notif", { opacity: 1, y: -50, duration: 0.5 }, 25.5);
+    // --- 40-60s: Conclusion ---
+    tl.to(["#payment-node", "#shipping-node", "#inventory-node", "#notification-node", ".broker-container", ".connection-line"], { opacity: 0, duration: 1 }, 39);
     
-    tl.to(["#tag-inv", "#tag-pay", "#tag-notif"], { opacity: 0, duration: 0.5 }, 28);
-    tl.set(["#tag-inv", "#tag-pay", "#tag-notif"], { opacity: 0 }, 28.5);
+    tl.to("#conclusion-web", { opacity: 1, duration: 1 }, 40);
+    tl.fromTo(".user-app-mini", { xPercent: -50, y: 50, opacity: 0 }, { xPercent: -50, y: 0, opacity: 1, duration: 1, ease: "back.out" }, 40.5);
 
-    // Services complete with significant stagger
-    tl.to("#inventory-service", { borderColor: "var(--success-color)", scale: 1, duration: 0.5 }, 29);
-    tl.set("#inv-status", { innerHTML: "Stock Updated", color: "var(--success-color)" }, 29);
+    tl.set("#main-title", { innerHTML: "A Web of Reacting Events" }, 41);
+    tl.set("#main-subtitle", { innerHTML: "Faster. Scalable. Resilient.<br>The customer never waits." }, 41);
     
-    tl.to("#payment-service", { borderColor: "var(--success-color)", scale: 1, duration: 0.5 }, 31);
-    tl.set("#pay-status", { innerHTML: "Payment Cleared", color: "var(--success-color)" }, 31);
+    // Reposition Text for Finale
+    tl.to("#main-title", { 
+      top: 80, left: 80, width: 600, textAlign: "left", 
+      fontSize: 80, duration: 1, ease: "power2.inOut" 
+    }, 41);
     
-    tl.to("#notification-service", { borderColor: "var(--success-color)", scale: 1, duration: 0.5 }, 33);
-    tl.set("#notif-status", { innerHTML: "Email Sent", color: "var(--success-color)" }, 33);
+    tl.to("#main-subtitle", { 
+      top: "auto", bottom: 80, right: 80, left: "auto", width: 800, textAlign: "right",
+      fontSize: 36, duration: 1, ease: "power2.inOut" 
+    }, 41);
 
-    // --- 40-50s: Decoupling ---
-    tl.set("#main-title", { innerHTML: "Decoupling" }, 40);
-    tl.set("#main-subtitle", { innerHTML: "They don't know about each other.<br>They only know about the event." }, 40);
-    
-    tl.to("#inventory-service", { x: 50, duration: 1.5, ease: "power2.inOut" }, 41);
-    tl.to("#payment-service", { x: 100, duration: 1.5, ease: "power2.inOut" }, 41.2);
-    tl.to("#notification-service", { x: 150, duration: 1.5, ease: "power2.inOut" }, 41.4);
+    // Generate mini web in JS
+    const webNodesContainer = document.getElementById("web-nodes");
+    const webSvg = document.getElementById("web-connections");
+    const nodes = [];
+    const numNodes = 30; // Increased count
 
-    // --- 50-60s: Resilience ---
-    tl.set("#main-title", { innerHTML: "Resilience" }, 50);
-    tl.set("#main-subtitle", { innerHTML: "If one service goes offline, the others keep working." }, 50);
+    for(let i=0; i<numNodes; i++) {
+      const node = document.createElement("div");
+      node.className = "clip mini-node";
+      // Deterministic positions based on index
+      const angle = (i / numNodes) * Math.PI * 2;
+      const radius = 250 + (i % 5) * 80;
+      const x = Math.cos(angle) * radius + 960;
+      const y = Math.sin(angle) * radius + 560; // Center slightly lower
+      
+      node.style.left = (x - 30) + "px";
+      node.style.top = (y - 30) + "px";
+      node.setAttribute("data-start", "40");
+      node.setAttribute("data-duration", "20");
+      node.setAttribute("data-track-index", (160 + i).toString()); // Higher track index to avoid conflicts
+      
+      webNodesContainer.appendChild(node);
+      nodes.push({x, y, el: node});
+      
+      tl.from(node, { scale: 0, opacity: 0, duration: 0.8, ease: "back.out(1.7)" }, 40.2 + (i * 0.05));
+      tl.to(node, { borderColor: "rgba(0, 242, 254, 0.6)", backgroundColor: "rgba(0, 242, 254, 0.1)", duration: 0.5, repeat: 15, yoyo: true }, 41 + (i * 0.05));
+    }
 
-    // Notification goes offline
-    tl.to("#notification-service", { className: "node node-offline", duration: 0.5 }, 51);
-    tl.set("#notif-status", { innerHTML: "OFFLINE", className: "node-status status-offline" }, 51.1);
-
-    // Another order event
-    tl.set("#order-status", { innerHTML: "New Order...", color: "var(--event-color)" }, 53);
-    animateAlongPath("#p-order-2", "#path-order-broker", 1.2, 53.2);
-    
-    // Broker fans out again
-    tl.to("#broker-core", { scale: 1.3, duration: 0.3, overwrite: "auto" }, 54.4);
-    animateAlongPath("#p-inv-2", "#path-broker-inventory", 1.2, 54.8);
-    animateAlongPath("#p-pay-2", "#path-broker-payment", 1.2, 55.2);
-
-    // Success for working services with stagger
-    tl.to("#inventory-service", { borderColor: "var(--success-color)", duration: 0.5 }, 57);
-    tl.set("#inv-status", { innerHTML: "Stock Updated", color: "var(--success-color)" }, 57);
-    
-    tl.to("#payment-service", { borderColor: "var(--success-color)", duration: 0.5 }, 58.5);
-    tl.set("#pay-status", { innerHTML: "Payment Cleared", color: "var(--success-color)" }, 58.5);
-
-    tl.set("#main-subtitle", { innerHTML: "The payment still clears. The system survives." }, 59.5);
+    // Connections between nodes (More dense)
+    for(let i=0; i<numNodes; i++) {
+      const targets = [(i + 5) % numNodes, (i + 13) % numNodes]; // Multi connections
+      const n1 = nodes[i];
+      
+      targets.forEach((targetIndex, j) => {
+        const n2 = nodes[targetIndex];
+        const lineId = `line-${i}-${j}`;
+        
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        line.setAttribute("d", `M ${n1.x} ${n1.y} L ${n2.x} ${n2.y}`);
+        line.className = "web-line";
+        line.id = lineId;
+        webSvg.appendChild(line);
+        
+        const lineLen = Math.sqrt(Math.pow(n2.x - n1.x, 2) + Math.pow(n2.y - n1.y, 2));
+        tl.from(line, { strokeDasharray: lineLen, strokeDashoffset: lineLen, duration: 1.5, ease: "power2.out" }, 41 + (i * 0.05));
+        
+        // Add a pulse along the line
+        const pulse = document.createElement("div");
+        pulse.className = "clip web-pulse";
+        pulse.setAttribute("data-start", "41");
+        pulse.setAttribute("data-duration", "19");
+        pulse.setAttribute("data-track-index", (300 + i * 2 + j).toString());
+        webNodesContainer.appendChild(pulse);
+        
+        const startTime = 42 + (i * 0.1) + (j * 0.2);
+        const obj = { distance: 0 };
+        
+        tl.set(pulse, { opacity: 1 }, startTime);
+        tl.to(obj, {
+          distance: lineLen,
+          duration: 1.5,
+          repeat: 8,
+          ease: "none",
+          onUpdate: () => {
+            const ratio = obj.distance / lineLen;
+            const px = n1.x + (n2.x - n1.x) * ratio;
+            const py = n1.y + (n2.y - n1.y) * ratio;
+            gsap.set(pulse, { x: px, y: py });
+          }
+        }, startTime);
+      });
+    }
 
     // Register
-    window.__timelines["broker-viz"] = tl;
+    window.__timelines["final-leg"] = tl;
   </script>
 </body>
 </html>
