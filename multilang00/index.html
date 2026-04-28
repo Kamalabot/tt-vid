@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>The Mental Shift: C++, Rust, Python</title>
+    <link rel="stylesheet" href="index.css" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="60"
+      data-width="1920"
+      data-height="1080"
+    >
+      <!-- Background Overlays -->
+      <div id="intro-bg" class="clip" data-start="0" data-duration="8" data-track-index="0">
+        <div class="overlay" style="background: linear-gradient(45deg, #0f172a, #1e293b);"></div>
+      </div>
+
+      <div id="cpp-bg" class="clip" data-start="8" data-duration="17" data-track-index="0">
+        <img src="assets/cpp.png" class="bg-image" id="cpp-img" />
+        <div class="overlay"></div>
+      </div>
+
+      <div id="rust-bg" class="clip" data-start="25" data-duration="17" data-track-index="0">
+        <img src="assets/rust.png" class="bg-image" id="rust-img" />
+        <div class="overlay"></div>
+      </div>
+
+      <div id="python-bg" class="clip" data-start="42" data-duration="13" data-track-index="0">
+        <img src="assets/python.png" class="bg-image" id="python-img" />
+        <div class="overlay"></div>
+      </div>
+
+      <div id="outro-bg" class="clip" data-start="55" data-duration="5" data-track-index="0">
+        <div class="overlay" style="background: #000;"></div>
+      </div>
+
+      <!-- Content Layers -->
+      
+      <!-- Scene 1: Intro -->
+      <div id="scene-intro" class="clip" data-start="0" data-duration="8" data-track-index="1">
+        <div class="content-card">
+          <h1>The Mental <span class="accent-rust">Shift</span></h1>
+          <p class="subtitle">Transitioning between C++, Rust, and Python</p>
+          <p style="font-size: 28px; color: var(--text-secondary);">It’s about shifting your entire mental model of how a computer operates.</p>
+        </div>
+      </div>
+
+      <!-- Scene 2: C++ -->
+      <div id="scene-cpp" class="clip" data-start="8" data-duration="17" data-track-index="1">
+        <div class="content-card" style="border-color: var(--cpp-accent);">
+          <div class="label label-cpp">Chief Engineer</div>
+          <h1>C++</h1>
+          <p class="quote">"You have total control, but if you forget to tighten a single bolt, the whole machine might explode at 200 mph."</p>
+          <div class="code-snippet" style="border-color: var(--cpp-accent);">
+            <span style="color: #94a3b8;">// Manual Memory Management</span><br/>
+            int* ptr = new int[1024];<br/>
+            <span style="color: #ef4444;">// Don't forget delete[]!</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scene 3: Rust -->
+      <div id="scene-rust" class="clip" data-start="25" data-duration="17" data-track-index="1">
+        <div class="content-card" style="border-color: var(--rust-accent);">
+          <div class="label label-rust">Aerospace Engineer</div>
+          <h1>Rust</h1>
+          <p class="quote">"Working within a rigorous safety protocol that refuses to let the engine start if a single bolt is loose."</p>
+          <div class="code-snippet" style="border-color: var(--rust-accent);">
+            <span style="color: #94a3b8;">// Borrow Checker at work</span><br/>
+            let v = vec![1, 2, 3];<br/>
+            <span style="color: #3b82f6;">let handle = &v; // Ownership safe</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scene 4: Python -->
+      <div id="scene-python" class="clip" data-start="42" data-duration="13" data-track-index="1">
+        <div class="content-card" style="border-color: var(--python-accent);">
+          <div class="label label-python">The Pilot</div>
+          <h1>Python</h1>
+          <p class="quote">"You don’t need to know how the fuel injectors work; you just need to know how to fly the plane."</p>
+          <div class="code-snippet" style="border-color: var(--python-accent);">
+            <span style="color: #94a3b8;"># Focus on the destination</span><br/>
+            import aircraft<br/>
+            <span style="color: #10b981;">aircraft.fly(to="Cloud 9")</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scene 5: Outro -->
+      <div id="scene-outro" class="clip" data-start="55" data-duration="5" data-track-index="1">
+        <h1 style="font-size: 100px;">Master the <br/><span class="accent-rust">Perspective</span></h1>
+      </div>
+
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // GLOBAL: visibility control is handled by the framework using 'clip' class
+      // but we add specific animations here.
+
+      // Scene 1: Intro
+      tl.set("#intro-bg", { opacity: 1 }, 0);
+      tl.set("#scene-intro", { opacity: 1 }, 0);
+      tl.from("#scene-intro .content-card", { opacity: 0, y: 50, duration: 1.5, ease: "power4.out" }, 0.5);
+      tl.to("#scene-intro .content-card", { opacity: 0, scale: 0.9, duration: 1, ease: "power2.in" }, 7);
+      tl.set("#scene-intro .content-card", { opacity: 0 }, 8);
+
+      // Scene 2: C++
+      tl.set("#cpp-bg", { opacity: 1 }, 8);
+      tl.set("#scene-cpp", { opacity: 1 }, 8);
+      tl.from("#cpp-img", { scale: 1.3, duration: 17, ease: "none" }, 8);
+      tl.from("#scene-cpp .content-card", { opacity: 0, x: -100, duration: 1.5, ease: "power3.out" }, 8.5);
+      tl.from("#scene-cpp .code-snippet", { opacity: 0, y: 20, duration: 1, stagger: 0.2 }, 10);
+      tl.to("#scene-cpp .content-card", { opacity: 0, x: 100, duration: 1, ease: "power2.in" }, 24);
+      tl.set("#scene-cpp .content-card", { opacity: 0 }, 25);
+
+      // Scene 3: Rust
+      tl.set("#rust-bg", { opacity: 1 }, 25);
+      tl.set("#scene-rust", { opacity: 1 }, 25);
+      tl.from("#rust-img", { scale: 1.3, duration: 17, ease: "none" }, 25);
+      tl.from("#scene-rust .content-card", { opacity: 0, y: 100, duration: 1.5, ease: "power3.out" }, 25.5);
+      tl.from("#scene-rust .code-snippet", { opacity: 0, y: 20, duration: 1 }, 27);
+      tl.to("#scene-rust .content-card", { opacity: 0, y: -100, duration: 1, ease: "power2.in" }, 41);
+      tl.set("#scene-rust .content-card", { opacity: 0 }, 42);
+
+      // Scene 4: Python
+      tl.set("#python-bg", { opacity: 1 }, 42);
+      tl.set("#scene-python", { opacity: 1 }, 42);
+      tl.fromTo("#python-img", { scale: 1 }, { scale: 1.2, duration: 13, ease: "none" }, 42);
+      tl.from("#scene-python .content-card", { opacity: 0, scale: 1.1, duration: 1.5, ease: "power3.out" }, 42.5);
+      tl.from("#scene-python .code-snippet", { opacity: 0, y: 20, duration: 1 }, 44);
+      tl.to("#scene-python .content-card", { opacity: 0, scale: 0.8, duration: 1, ease: "power2.in" }, 54);
+      tl.set("#scene-python .content-card", { opacity: 0 }, 55);
+
+      // Scene 5: Outro
+      tl.set("#outro-bg", { opacity: 1 }, 55);
+      tl.set("#scene-outro", { opacity: 1 }, 55);
+      tl.from("#scene-outro h1", { opacity: 0, letterSpacing: "20px", duration: 2, ease: "power4.out" }, 55.5);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
