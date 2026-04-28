@@ -6,7 +6,7 @@ This document outlines the storyboard, script, and visual plan for a HyperFrames
 - **Duration**: ~55 Seconds
 - **Resolution**: 1080x1920 (Vertical - ideal for Shorts/Reels/TikTok)
 - **Framework**: HyperFrames (GSAP, HTML/CSS)
-- **Aesthetic**: Premium "Dark Tech", glassmorphism, smooth dynamic easing (Expo.easeInOut), glowing accents.
+- **Aesthetic**: Premium "Interactive Tech", glassmorphism, smooth dynamic easing (Expo.easeInOut), popping accents.
 
 ---
 
