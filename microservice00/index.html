@@ -3,334 +3,387 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=1920, height=1080" />
+  <title>Event-Driven Architecture: The Broker</title>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg: #05070a;
+      --card-bg: rgba(15, 20, 35, 0.8);
+      --broker-color: #ff2d55;
+      --event-color: #00f2fe;
+      --success-color: #38ef7d;
+      --error-color: #ff4b2b;
+      --text-main: #ffffff;
+      --text-dim: #a0aabf;
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
       width: 1920px; height: 1080px; overflow: hidden;
-      background: #0b0f19; font-family: 'Inter', sans-serif;
-      color: #fff;
+      background: var(--bg); font-family: 'Inter', sans-serif;
+      color: var(--text-main);
     }
+
     .scene {
       position: absolute; top: 0; left: 0; width: 1920px; height: 1080px;
     }
+
+    .title-container {
+      position: absolute; top: 80px; width: 100%; text-align: center;
+      z-index: 10;
+    }
+
     .title {
-      position: absolute; top: 80px; left: 0; width: 1920px;
-      text-align: center; font-size: 64px; font-weight: 800;
-      letter-spacing: -1px;
-      background: linear-gradient(90deg, #00f2fe 0%, #4facfe 100%);
+      font-size: 72px; font-weight: 800; letter-spacing: -2px;
+      background: linear-gradient(135deg, #fff 0%, #a0aabf 100%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
     }
-    
+
     .subtitle {
-      position: absolute; top: 180px; left: 0; width: 1920px;
-      text-align: center; font-size: 36px; font-weight: 300;
-      color: #a0aabf; line-height: 1.4;
+      font-size: 32px; font-weight: 300; color: var(--text-dim);
+      max-width: 1000px; margin: 0 auto; line-height: 1.4;
     }
-    
+
+    /* Node Styles */
     .node {
-      position: absolute; display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      background: rgba(20, 25, 40, 0.7);
+      position: absolute; width: 340px; height: 220px;
+      background: var(--card-bg);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 24px; backdrop-filter: blur(15px);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1);
-      transition: box-shadow 0.3s ease;
+      border-radius: 32px; backdrop-filter: blur(20px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1);
+      z-index: 5;
     }
-    
-    .node-title { font-size: 28px; font-weight: 600; margin-bottom: 20px; letter-spacing: 0.5px; }
-    
-    .btn {
-      padding: 18px 45px; background: linear-gradient(135deg, #ff416c, #ff4b2b);
-      border-radius: 40px; font-size: 24px; font-weight: 600;
-      box-shadow: 0 10px 25px rgba(255,65,108,0.4);
-      border: 1px solid rgba(255,255,255,0.2);
+
+    .node-icon {
+      width: 60px; height: 60px; margin-bottom: 15px;
+      display: flex; align-items: center; justify-content: center;
     }
-    
-    .btn-success { 
-      background: linear-gradient(135deg, #11998e, #38ef7d); 
-      box-shadow: 0 10px 25px rgba(17,153,142,0.4); 
+
+    .node-label { font-size: 28px; font-weight: 600; letter-spacing: 0.5px; }
+    .node-status { font-size: 18px; color: var(--text-dim); margin-top: 8px; font-weight: 400; }
+
+    /* The Broker - Heart of the System */
+    .broker-container {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 450px; height: 450px; display: flex; align-items: center; justify-content: center;
     }
-    
-    .path-line {
-      position: absolute; background: rgba(255,255,255,0.15);
-      border-radius: 2px;
-      opacity: 0; /* Hidden by default to avoid glitches */
+
+    .broker-core {
+      width: 240px; height: 240px; background: radial-gradient(circle, var(--broker-color) 0%, transparent 70%);
+      border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 100px rgba(255, 45, 85, 0.4);
     }
-    
-    .dot {
-      position: absolute; width: 20px; height: 20px; border-radius: 50%;
-      background: #00f2fe; box-shadow: 0 0 20px #00f2fe, 0 0 40px #00f2fe;
-      transform: translate(-50%, -50%);
+
+    .broker-ring {
+      position: absolute; width: 100%; height: 100%;
+      border: 2px solid rgba(255, 45, 85, 0.2); border-radius: 50%;
     }
-    
-    .spinner {
-      width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.05);
-      border-top-color: #ff416c; border-radius: 50%;
-      display: none;
+
+    .broker-label {
+      position: absolute; bottom: -60px; font-size: 36px; font-weight: 800;
+      color: var(--broker-color); text-transform: uppercase; letter-spacing: 4px;
     }
-    
-    /* Scene 1 Layout - Pushed Down */
-    #s1-app { top: 550px; left: 200px; width: 300px; height: 300px; }
-    #s1-monolith { top: 400px; left: 800px; width: 650px; height: 600px; border-color: rgba(255,65,108,0.3); }
-    .mono-module {
-      width: 450px; height: 110px; margin: 18px 0; border-radius: 16px;
-      background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
-      font-size: 28px; font-weight: 400; border: 1px solid rgba(255,255,255,0.08);
-      position: relative; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+
+    /* Event Paths */
+    .path-svg {
+      position: absolute; top: 0; left: 0; width: 1920px; height: 1080px;
+      pointer-events: none; z-index: 1;
     }
-    
-    /* Scene 2 Layout - Pushed Down */
-    #s2-app { top: 550px; left: 150px; width: 300px; height: 300px; }
-    #s2-order { top: 550px; left: 600px; width: 300px; height: 300px; border-color: rgba(0,242,254,0.3); }
-    #s2-broker { top: 550px; left: 1050px; width: 200px; height: 300px; border-color: rgba(56,239,125,0.4); background: rgba(56,239,125,0.05); }
-    
-    /* Microservices End Nodes - Pushed Even Further Down */
-    #s2-db { top: 475px; left: 1450px; width: 300px; height: 150px; }
-    #s2-pay { top: 675px; left: 1450px; width: 300px; height: 150px; }
-    #s2-ware { top: 875px; left: 1450px; width: 300px; height: 150px; }
-    
-    .pulse {
-      box-shadow: 0 0 40px rgba(0, 242, 254, 0.4);
-      border-color: rgba(0, 242, 254, 0.8);
+
+    .connection-line {
+      fill: none; stroke: rgba(255, 255, 255, 0.05); stroke-width: 3;
+      stroke-dasharray: 10, 10;
     }
-    
-    .event-msg {
-      position: absolute; padding: 12px 24px; background: #fff; color: #000;
-      border-radius: 12px; font-weight: 800; font-size: 20px;
-      transform: translate(-50%, -50%); opacity: 0;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-      border: 2px solid rgba(255,255,255,0.8);
+
+    .event-particle {
+      width: 20px; height: 20px; background: var(--event-color);
+      border-radius: 50%; position: absolute;
+      box-shadow: 0 0 20px var(--event-color), 0 0 40px var(--event-color);
+      display: none; z-index: 10;
     }
-    
-    .glow-text {
-      text-shadow: 0 0 20px rgba(255,255,255,0.4);
+
+    /* Floating Event Labels */
+    .event-tag {
+      position: absolute; padding: 10px 20px; background: #fff; color: #000;
+      border-radius: 12px; font-weight: 800; font-size: 18px;
+      transform: translate(-50%, -50%); opacity: 0; pointer-events: none;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 11;
+    }
+
+    /* Specific Node Positions */
+    #order-service { left: 200px; top: 430px; border-color: rgba(0, 242, 254, 0.3); }
+    #inventory-service { right: 200px; top: 180px; }
+    #payment-service { right: 200px; top: 430px; }
+    #notification-service { right: 200px; top: 680px; }
+
+    .status-offline { color: var(--error-color) !important; font-weight: 800; }
+    .node-offline { border-color: var(--error-color) !important; background: rgba(255, 75, 43, 0.1) !important; }
+
+    /* Particles/Glow Effects */
+    .glow-overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(circle at 50% 50%, rgba(255, 45, 85, 0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .bg-grid {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
-  <div id="root" data-composition-id="main" data-start="0" data-duration="45" data-width="1920" data-height="1080">
+  <div id="root" data-composition-id="broker-viz" data-start="0" data-duration="60" data-width="1920" data-height="1080">
+    
+    <div class="bg-grid"></div>
+    <div class="glow-overlay"></div>
 
-    <!-- Scene 1: Monolith -->
-    <div id="scene1" class="clip scene" data-start="0" data-duration="21" data-track-index="1">
-      <div id="scene1-inner" style="width: 100%; height: 100%; opacity: 0;">
-      <div class="title" style="background: linear-gradient(90deg, #ff758c 0%, #ff7eb3 100%); -webkit-background-clip: text;">The Monolith Waiting Game</div>
-      <div class="subtitle" id="s1-sub">In a traditional system, clicking "Buy" blocks everything.<br/>Your app waits until all backend processes finish sequentially.</div>
-      
-      <!-- User App -->
-      <div class="node" id="s1-app">
-        <div class="node-title">User App</div>
-        <div class="btn" id="s1-btn">Buy Now</div>
-        <div class="spinner" id="s1-spinner" style="margin-top:25px;"></div>
-        <div id="s1-status" style="margin-top:25px; color:#ff758c; font-weight:600; font-size:24px; opacity:0; text-shadow: 0 0 10px rgba(255,117,140,0.5);">Freezing...</div>
-      </div>
-
-      <!-- Path line -->
-      <div class="path-line s1-path" style="top:698px; left:500px; width:300px; height:4px;"></div>
-      <div class="dot" id="s1-dot" style="top:700px; left:500px; opacity:0; background:#ff758c; box-shadow:0 0 20px #ff758c, 0 0 40px #ff758c;"></div>
-
-      <!-- Monolith -->
-      <div class="node" id="s1-monolith">
-        <div class="node-title" style="color:#ff758c; font-size: 32px; letter-spacing: 1px;">Monolithic Backend</div>
-        <div class="mono-module" id="s1-db">1. Update Database</div>
-        <div class="mono-module" id="s1-pay">2. Clear Payment</div>
-        <div class="mono-module" id="s1-ware">3. Confirm Warehouse</div>
-      </div>
-      </div>
+    <div class="title-container">
+      <div class="title" id="main-title">The Event Broker</div>
+      <div class="subtitle" id="main-subtitle">The heart of a decoupled system.</div>
     </div>
 
-    <!-- Scene 2: Microservices -->
-    <div id="scene2" class="clip scene" data-start="20" data-duration="25" data-track-index="2">
-      <div id="scene2-inner" style="width: 100%; height: 100%; opacity: 0;">
-      <div class="title" style="background: linear-gradient(90deg, #38ef7d, #11998e); -webkit-background-clip: text;">Modern Event-Driven Architecture</div>
-      <div class="subtitle" id="s2-sub">Fire and Forget.<br/>Immediate user feedback. Parallel background processing.</div>
-
-      <!-- User App -->
-      <div class="node" id="s2-app">
-        <div class="node-title">User App</div>
-        <div class="btn" id="s2-btn">Buy Now</div>
-        <div class="btn btn-success" id="s2-success" style="position:absolute; top:130px; opacity:0;">Success!</div>
-      </div>
-
-      <!-- Paths -->
-      <div class="path-line s2-path" style="top:698px; left:450px; width:150px; height:4px;"></div>
-      <div class="path-line s2-path" style="top:698px; left:900px; width:150px; height:4px;"></div>
-      
-      <!-- Trunk and Branches -->
-      <div class="path-line s2-path" style="top:698px; left:1250px; width:100px; height:4px;"></div>
-      <div class="path-line s2-path" style="top:550px; left:1350px; width:4px; height:400px;"></div>
-      <div class="path-line s2-path" style="top:548px; left:1350px; width:100px; height:4px;"></div>
-      <div class="path-line s2-path" style="top:748px; left:1350px; width:100px; height:4px;"></div>
-      <div class="path-line s2-path" style="top:948px; left:1350px; width:100px; height:4px;"></div>
-
-      <!-- Nodes -->
-      <div class="node" id="s2-order">
-        <div class="node-title" style="color:#00f2fe">Order Service</div>
-        <div style="font-size:20px; color:#a0aabf; text-align:center; padding: 0 20px; line-height:1.5;">Records request<br/>& Publishes Event</div>
-      </div>
-
-      <div class="node" id="s2-broker">
-        <div class="node-title" style="color:#38ef7d; text-align:center; line-height:1.3;">Message<br/>Broker</div>
-      </div>
-
-      <div class="node" id="s2-db">
-        <div class="node-title">Database Service</div>
-      </div>
-      <div class="node" id="s2-pay">
-        <div class="node-title">Payment Service</div>
-      </div>
-      <div class="node" id="s2-ware">
-        <div class="node-title">Warehouse Service</div>
-      </div>
-
-      <!-- Moving Events -->
-      <div class="event-msg" id="s2-ev1" style="top:700px; left:450px;">Req</div>
-      <div class="event-msg" id="s2-ev2" style="top:700px; left:900px; background:#38ef7d;">Event</div>
-      <div class="event-msg s2-ev-fan" id="s2-ev3-1" style="top:700px; left:1250px; background:#38ef7d;">Event</div>
-      <div class="event-msg s2-ev-fan" id="s2-ev3-2" style="top:700px; left:1250px; background:#38ef7d;">Event</div>
-      <div class="event-msg s2-ev-fan" id="s2-ev3-3" style="top:700px; left:1250px; background:#38ef7d;">Event</div>
-      </div>
+    <!-- SVGs for Paths -->
+    <div class="clip" data-start="11" data-duration="49" data-track-index="10">
+      <svg class="path-svg">
+        <defs>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        <!-- Connection Paths -->
+        <path id="path-order-broker" class="connection-line" d="M 540 540 L 840 540" />
+        <path id="path-broker-inventory" class="connection-line" d="M 1080 540 C 1200 540, 1250 290, 1380 290" />
+        <path id="path-broker-payment" class="connection-line" d="M 1080 540 L 1380 540" />
+        <path id="path-broker-notification" class="connection-line" d="M 1080 540 C 1200 540, 1250 790, 1380 790" />
+      </svg>
     </div>
+
+    <!-- The Broker -->
+    <div class="clip broker-container" data-start="0" data-duration="60" data-track-index="1">
+      <div class="broker-core" id="broker-core">
+        <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5">
+          <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z" stroke-opacity="0.2"/>
+          <path d="M12 7v10M7 12h10" stroke-linecap="round"/>
+          <circle cx="12" cy="12" r="3" fill="white"/>
+        </svg>
+      </div>
+      <div class="broker-ring" id="ring-1"></div>
+      <div class="broker-ring" id="ring-2"></div>
+      <div class="broker-label">BROKER</div>
+    </div>
+
+    <!-- Nodes -->
+    <div class="clip node" id="order-service" data-start="5" data-duration="55" data-track-index="2">
+      <div class="node-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+          <path d="M3 6h18M16 10a4 4 0 0 1-8 0"/>
+        </svg>
+      </div>
+      <div class="node-label">Order Service</div>
+      <div class="node-status" id="order-status">Idle</div>
+    </div>
+
+    <div class="clip node" id="inventory-service" data-start="8" data-duration="52" data-track-index="3">
+      <div class="node-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+          <path d="m3.3 7 8.7 5 8.7-5M12 22V12"/>
+        </svg>
+      </div>
+      <div class="node-label">Inventory</div>
+      <div class="node-status" id="inv-status">Listening...</div>
+    </div>
+
+    <div class="clip node" id="payment-service" data-start="9" data-duration="51" data-track-index="4">
+      <div class="node-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <rect x="2" y="5" width="20" height="14" rx="2"/>
+          <path d="M2 10h20"/>
+        </svg>
+      </div>
+      <div class="node-label">Payment</div>
+      <div class="node-status" id="pay-status">Listening...</div>
+    </div>
+
+    <div class="clip node" id="notification-service" data-start="10" data-duration="50" data-track-index="5">
+      <div class="node-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <path d="m22 2-7 20-4-9-9-4Z"/>
+          <path d="M22 2 11 13"/>
+        </svg>
+      </div>
+      <div class="node-label">Notification</div>
+      <div class="node-status" id="notif-status">Listening...</div>
+    </div>
+
+    <!-- Event Particles -->
+    <div class="clip event-particle" id="p-order" data-start="20" data-duration="2" data-track-index="20"></div>
+    <div class="clip event-particle" id="p-inv" data-start="22" data-duration="2" data-track-index="21"></div>
+    <div class="clip event-particle" id="p-pay" data-start="22" data-duration="2" data-track-index="22"></div>
+    <div class="clip event-particle" id="p-notif" data-start="22" data-duration="2" data-track-index="23"></div>
+
+    <!-- Resilience Particles -->
+    <div class="clip event-particle" id="p-order-2" data-start="53" data-duration="2" data-track-index="24"></div>
+    <div class="clip event-particle" id="p-inv-2" data-start="55" data-duration="2" data-track-index="25"></div>
+    <div class="clip event-particle" id="p-pay-2" data-start="55" data-duration="2" data-track-index="26"></div>
+
+    <!-- Event Tags -->
+    <div class="clip event-tag" id="tag-order" data-start="20" data-duration="2" data-track-index="30">ORDER PLACED</div>
+    <div class="clip event-tag" id="tag-inv" data-start="24" data-duration="2" data-track-index="31">-1 STOCK</div>
+    <div class="clip event-tag" id="tag-pay" data-start="24" data-duration="2" data-track-index="32">CHARGE BANK</div>
+    <div class="clip event-tag" id="tag-notif" data-start="24" data-duration="2" data-track-index="33">SEND EMAIL</div>
+
   </div>
 
   <script>
     window.__timelines = window.__timelines || {};
     const tl = gsap.timeline({ paused: true });
 
-    // ==== SCENE 1 (0 to 20s) ====
-    // Fade in the whole scene inner container to avoid glitches
-    tl.to("#scene1-inner", { opacity: 1, duration: 1 }, 0);
+    // Helper to animate along path
+    function animateAlongPath(particleId, pathId, duration, startTime) {
+      const path = document.querySelector(pathId);
+      const pathLength = path.getTotalLength();
+      const obj = { distance: 0 };
+      
+      tl.set(particleId, { display: 'block', opacity: 1 }, startTime);
+      tl.to(obj, {
+        distance: pathLength,
+        duration: duration,
+        ease: "power1.inOut",
+        onUpdate: () => {
+          const point = path.getPointAtLength(obj.distance);
+          gsap.set(particleId, { x: point.x, y: point.y });
+        }
+      }, startTime);
+      tl.set(particleId, { display: 'none' }, startTime + duration);
+    }
+
+    // --- 0-10s: Introduction ---
+    tl.from("#main-title", { opacity: 0, y: -50, duration: 1.5 }, 0.5);
+    tl.from("#main-subtitle", { opacity: 0, y: -20, duration: 1.5 }, 1.0);
     
-    tl.from("#scene1-inner .title", { opacity: 0, y: -30, duration: 1 }, 0.5);
-    tl.from("#scene1-inner .subtitle", { opacity: 0, y: -20, duration: 1 }, 0.8);
-    tl.from("#s1-app", { opacity: 0, x: -50, duration: 1 }, 1.2);
-    tl.from("#s1-monolith", { opacity: 0, x: 50, duration: 1 }, 1.6);
-    tl.to(".s1-path", { opacity: 1, duration: 0.8 }, 2.0);
+    // Pulse the Broker Core
+    tl.to("#broker-core", { scale: 1.1, repeat: 39, yoyo: true, duration: 1.5, ease: "sine.inOut" }, 0);
+    tl.from(".broker-ring", { scale: 0.5, opacity: 0, stagger: 0.5, duration: 2 }, 0);
+    tl.to("#ring-1", { scale: 1.5, opacity: 0, repeat: 19, duration: 3, ease: "power1.out" }, 0);
+    tl.to("#ring-2", { scale: 1.8, opacity: 0, repeat: 14, duration: 4, ease: "power1.out" }, 1);
 
-    // Click Buy Action
-    tl.to("#s1-btn", { scale: 0.9, duration: 0.1 }, 3.5);
-    tl.to("#s1-btn", { scale: 1, duration: 0.1 }, 3.6);
+    // --- 5-15s: Services Appear & Connection ---
+    tl.from("#order-service", { x: -100, opacity: 0, duration: 1 }, 5);
+    tl.from("#inventory-service", { x: 100, opacity: 0, duration: 1 }, 8);
+    tl.from("#payment-service", { x: 100, opacity: 0, duration: 1 }, 9);
+    tl.from("#notification-service", { x: 100, opacity: 0, duration: 1 }, 10);
     
-    // User waits (spinner starts)
-    tl.to("#s1-spinner", { display: 'block', rotation: 360*5, duration: 10, ease: "linear" }, 3.7);
+    tl.to(".connection-line", { strokeDashoffset: 0, opacity: 1, duration: 2, stagger: 0.3 }, 11);
+    tl.set(".connection-line", { strokeDasharray: "10, 10", strokeDashoffset: 100 }, 0); // Setup
+    tl.to(".connection-line", { strokeDashoffset: 0, duration: 20, ease: "none", repeat: 2 }, 13);
+
+    tl.set("#main-subtitle", { innerHTML: "Instead of calling departments one by one,<br>they all 'listen' to the stream." }, 12);
+
+    // --- 20-35s: The Event Flow ---
+    // Event 1: Order Placed
+    tl.set("#main-subtitle", { innerHTML: "As soon as an 'Order Placed' event hits the stream..." }, 18);
     
-    // Signal to Monolith
-    tl.to("#s1-dot", { opacity: 1, duration: 0.2 }, 3.7);
-    tl.to("#s1-dot", { left: 800, duration: 1, ease: "power2.inOut" }, 3.9);
-    tl.to("#s1-dot", { opacity: 0, duration: 0.2 }, 4.9);
-
-    // Monolith processes sequentially
-    // 1. Database
-    tl.to("#s1-db", { background: "rgba(255, 117, 140, 0.2)", borderColor: "#ff758c", duration: 0.5 }, 5.1);
-    tl.to("#s1-db", { background: "rgba(0,0,0,0.5)", borderColor: "rgba(255,255,255,0.08)", duration: 0.5 }, 7.5);
+    // Order Service fires
+    tl.to("#order-service", { scale: 1.05, borderColor: "var(--event-color)", duration: 0.3 }, 20);
+    tl.set("#order-status", { innerHTML: "Publishing...", color: "var(--event-color)" }, 20);
     
-    // 2. Payment
-    tl.to("#s1-pay", { background: "rgba(255, 117, 140, 0.2)", borderColor: "#ff758c", duration: 0.5 }, 7.7);
-    tl.to("#s1-pay", { background: "rgba(0,0,0,0.5)", borderColor: "rgba(255,255,255,0.08)", duration: 0.5 }, 10.5);
+    animateAlongPath("#p-order", "#path-order-broker", 1.5, 20.3);
+    tl.to("#tag-order", { opacity: 1, y: -40, duration: 0.5 }, 20.5);
+    tl.to("#tag-order", { opacity: 0, y: -80, duration: 0.5 }, 21.5);
+    tl.set("#tag-order", { opacity: 0 }, 22.0);
     
-    // 3. Warehouse (Slow/Freeze)
-    tl.to("#s1-ware", { background: "rgba(255, 65, 108, 0.3)", borderColor: "#ff416c", duration: 0.5 }, 10.7);
+    tl.to("#order-service", { scale: 1, borderColor: "rgba(255,255,255,0.1)", duration: 0.3 }, 22);
+    tl.set("#order-status", { innerHTML: "Success!", color: "var(--success-color)" }, 22);
+
+    // Broker receives and fans out
+    tl.to("#broker-core", { scale: 1.4, backgroundColor: "var(--event-color)", duration: 0.3, overwrite: "auto" }, 21.8);
+    tl.to("#broker-core", { scale: 1, backgroundColor: "transparent", duration: 0.5, overwrite: "auto" }, 22.5);
+
+    tl.set("#main-subtitle", { innerHTML: "Three things happen at once, in parallel." }, 23);
+
+    // Parallel fan out with slight staggered delay
+    animateAlongPath("#p-inv", "#path-broker-inventory", 1.2, 22.8);
+    animateAlongPath("#p-pay", "#path-broker-payment", 1.2, 23.1);
+    animateAlongPath("#p-notif", "#path-broker-notification", 1.2, 23.4);
+
+    // Services react with staggered delays
+    tl.to("#inventory-service", { borderColor: "var(--event-color)", scale: 1.05, duration: 0.4 }, 24.0);
+    tl.set("#inv-status", { innerHTML: "Updating Stock...", color: "var(--event-color)" }, 24.0);
     
-    tl.set("#s1-sub", { innerHTML: "<span style='color:#ff758c; font-weight:600;'>If one part is slow, the whole experience freezes.</span><br/>The user is left waiting in frustration." }, 11.5);
-    tl.from("#s1-sub", { opacity: 0, duration: 0.5 }, 11.6);
+    tl.to("#payment-service", { borderColor: "var(--event-color)", scale: 1.05, duration: 0.4 }, 24.4);
+    tl.set("#pay-status", { innerHTML: "Contacting Bank...", color: "var(--event-color)" }, 24.4);
     
-    tl.to("#s1-app", { borderColor: "#ff416c", boxShadow: "0 20px 40px rgba(255,65,108,0.3)", duration: 0.5 }, 12.0);
-    tl.to("#s1-status", { opacity: 1, duration: 0.5 }, 12.0);
+    tl.to("#notification-service", { borderColor: "var(--event-color)", scale: 1.05, duration: 0.4 }, 24.8);
+    tl.set("#notif-status", { innerHTML: "Preparing Email...", color: "var(--event-color)" }, 24.8);
+
+    // Tags show actions with stagger
+    tl.to("#tag-inv", { opacity: 1, y: -50, duration: 0.5 }, 24.5);
+    tl.to("#tag-pay", { opacity: 1, y: -50, duration: 0.5 }, 25.0);
+    tl.to("#tag-notif", { opacity: 1, y: -50, duration: 0.5 }, 25.5);
     
-    // Fade out Scene 1
-    tl.to("#scene1-inner", { opacity: 0, duration: 1.5, ease: "power2.inOut" }, 18.5);
-    tl.set("#scene1-inner", { opacity: 0, visibility: "hidden" }, 20.0);
+    tl.to(["#tag-inv", "#tag-pay", "#tag-notif"], { opacity: 0, duration: 0.5 }, 28);
+    tl.set(["#tag-inv", "#tag-pay", "#tag-notif"], { opacity: 0 }, 28.5);
 
-
-    // ==== SCENE 2 (20s to 45s) ====
-    tl.to("#scene2-inner", { opacity: 1, duration: 1.5, ease: "power2.inOut" }, 20);
+    // Services complete with significant stagger
+    tl.to("#inventory-service", { borderColor: "var(--success-color)", scale: 1, duration: 0.5 }, 29);
+    tl.set("#inv-status", { innerHTML: "Stock Updated", color: "var(--success-color)" }, 29);
     
-    tl.from("#scene2-inner .title", { opacity: 0, y: -30, duration: 1 }, 20.5);
-    tl.from("#scene2-inner .subtitle", { opacity: 0, y: -20, duration: 1 }, 20.8);
+    tl.to("#payment-service", { borderColor: "var(--success-color)", scale: 1, duration: 0.5 }, 31);
+    tl.set("#pay-status", { innerHTML: "Payment Cleared", color: "var(--success-color)" }, 31);
     
-    // Nodes appear
-    tl.from("#s2-app", { opacity: 0, x: -50, duration: 1 }, 21.2);
-    tl.from("#s2-order", { opacity: 0, scale: 0.9, duration: 0.8 }, 21.6);
-    tl.from("#s2-broker", { opacity: 0, scale: 0.9, duration: 0.8 }, 22.0);
-    tl.from(["#s2-db", "#s2-pay", "#s2-ware"], { opacity: 0, x: 50, duration: 0.8, stagger: 0.2 }, 22.4);
-    tl.to(".s2-path", { opacity: 1, duration: 0.8 }, 22.8);
+    tl.to("#notification-service", { borderColor: "var(--success-color)", scale: 1, duration: 0.5 }, 33);
+    tl.set("#notif-status", { innerHTML: "Email Sent", color: "var(--success-color)" }, 33);
 
-    // Click Buy
-    tl.to("#s2-btn", { scale: 0.9, duration: 0.1 }, 25.0);
-    tl.to("#s2-btn", { scale: 1, duration: 0.1 }, 25.1);
-
-    // Request goes to Order Service
-    tl.to("#s2-ev1", { opacity: 1, duration: 0.2 }, 25.2);
-    tl.to("#s2-ev1", { left: 600, duration: 0.6, ease: "power2.inOut" }, 25.4);
-    tl.to("#s2-ev1", { opacity: 0, duration: 0.2 }, 26.0);
-
-    // IMMEDIATELY user gets Success! (Fire and Forget)
-    tl.to("#s2-btn", { opacity: 0, duration: 0.2 }, 26.2);
-    tl.to("#s2-success", { opacity: 1, scale: 1.1, duration: 0.3 }, 26.2);
-    tl.to("#s2-success", { scale: 1, duration: 0.2 }, 26.5);
-    tl.to("#s2-app", { borderColor: "#38ef7d", boxShadow: "0 20px 40px rgba(56,239,125,0.2)", duration: 0.5 }, 26.2);
+    // --- 40-50s: Decoupling ---
+    tl.set("#main-title", { innerHTML: "Decoupling" }, 40);
+    tl.set("#main-subtitle", { innerHTML: "They don't know about each other.<br>They only know about the event." }, 40);
     
-    // Change subtitle to emphasize Fire and Forget
-    tl.set("#s2-sub", { innerHTML: "The Order Service instantly returns a success message.<br/><span style='color:#00f2fe; font-weight:600;'>The user is not blocked.</span>" }, 27.0);
-    tl.from("#s2-sub", { opacity: 0.5, scale: 0.98, duration: 0.5 }, 27.1);
+    tl.to("#inventory-service", { x: 50, duration: 1.5, ease: "power2.inOut" }, 41);
+    tl.to("#payment-service", { x: 100, duration: 1.5, ease: "power2.inOut" }, 41.2);
+    tl.to("#notification-service", { x: 150, duration: 1.5, ease: "power2.inOut" }, 41.4);
 
-    // Order Service publishes Event to Broker
-    tl.to("#s2-order", { borderColor: "#38ef7d", boxShadow: "0 0 30px rgba(56,239,125,0.3)", duration: 0.3 }, 27.5);
-    tl.to("#s2-ev2", { opacity: 1, duration: 0.2 }, 27.6);
-    tl.to("#s2-ev2", { left: 1050, duration: 0.7, ease: "power2.inOut" }, 27.8);
-    tl.to("#s2-ev2", { opacity: 0, duration: 0.2 }, 28.5);
+    // --- 50-60s: Resilience ---
+    tl.set("#main-title", { innerHTML: "Resilience" }, 50);
+    tl.set("#main-subtitle", { innerHTML: "If one service goes offline, the others keep working." }, 50);
 
-    // Broker fans out Events
-    tl.to("#s2-broker", { backgroundColor: "rgba(56,239,125,0.2)", boxShadow: "0 0 40px rgba(56,239,125,0.4)", duration: 0.3 }, 28.7);
+    // Notification goes offline
+    tl.to("#notification-service", { className: "node node-offline", duration: 0.5 }, 51);
+    tl.set("#notif-status", { innerHTML: "OFFLINE", className: "node-status status-offline" }, 51.1);
+
+    // Another order event
+    tl.set("#order-status", { innerHTML: "New Order...", color: "var(--event-color)" }, 53);
+    animateAlongPath("#p-order-2", "#path-order-broker", 1.2, 53.2);
     
-    tl.set("#s2-sub", { innerHTML: "Message Broker fans out the Event.<br/><span style='color:#38ef7d; font-weight:600;'>All services process the work in parallel, behind the scenes.</span>" }, 29.5);
-    tl.from("#s2-sub", { opacity: 0.5, duration: 0.5 }, 29.6);
+    // Broker fans out again
+    tl.to("#broker-core", { scale: 1.3, duration: 0.3, overwrite: "auto" }, 54.4);
+    animateAlongPath("#p-inv-2", "#path-broker-inventory", 1.2, 54.8);
+    animateAlongPath("#p-pay-2", "#path-broker-payment", 1.2, 55.2);
+
+    // Success for working services with stagger
+    tl.to("#inventory-service", { borderColor: "var(--success-color)", duration: 0.5 }, 57);
+    tl.set("#inv-status", { innerHTML: "Stock Updated", color: "var(--success-color)" }, 57);
     
-    tl.to(".s2-ev-fan", { opacity: 1, duration: 0.2 }, 30.0);
-    // Move all parallel along the trunk
-    tl.to(".s2-ev-fan", { left: 1350, duration: 0.4, ease: "power1.in" }, 30.2);
-    // Branch out at the split point
-    tl.to("#s2-ev3-1", { top: 550, duration: 0.2 }, 30.6);
-    tl.to("#s2-ev3-2", { top: 750, duration: 0.2 }, 30.6);
-    tl.to("#s2-ev3-3", { top: 950, duration: 0.2 }, 30.6);
-    // Final move to their respective services
-    tl.to(".s2-ev-fan", { left: 1450, duration: 0.4, ease: "power1.out" }, 30.8);
-    
-    tl.to(".s2-ev-fan", { opacity: 0, duration: 0.2 }, 31.4);
+    tl.to("#payment-service", { borderColor: "var(--success-color)", duration: 0.5 }, 58.5);
+    tl.set("#pay-status", { innerHTML: "Payment Cleared", color: "var(--success-color)" }, 58.5);
 
-    // Services initially light up as they receive the event
-    tl.to(["#s2-db", "#s2-pay", "#s2-ware"], { 
-      background: "rgba(56, 239, 125, 0.1)", 
-      borderColor: "#38ef7d", 
-      boxShadow: "0 0 20px rgba(56,239,125,0.2)",
-      duration: 0.5 
-    }, 31.2);
+    tl.set("#main-subtitle", { innerHTML: "The payment still clears. The system survives." }, 59.5);
 
-    // 1. Database Service Completes
-    tl.to("#s2-db", { background: "rgba(56, 239, 125, 0.4)", boxShadow: "0 0 40px rgba(56,239,125,0.5)", duration: 0.4 }, 33.5);
-    tl.to("#s2-db", { background: "rgba(20, 25, 40, 0.7)", borderColor: "rgba(255,255,255,0.1)", boxShadow: "0 20px 40px rgba(0,0,0,0.6)", duration: 1.0 }, 34.5);
-
-    // 2. Payment Service Completes
-    tl.to("#s2-pay", { background: "rgba(56, 239, 125, 0.4)", boxShadow: "0 0 40px rgba(56,239,125,0.5)", duration: 0.4 }, 36.5);
-    tl.to("#s2-pay", { background: "rgba(20, 25, 40, 0.7)", borderColor: "rgba(255,255,255,0.1)", boxShadow: "0 20px 40px rgba(0,0,0,0.6)", duration: 1.0 }, 37.5);
-
-    // 3. Warehouse Service Completes (at a different pace)
-    tl.to("#s2-ware", { background: "rgba(56, 239, 125, 0.4)", boxShadow: "0 0 40px rgba(56,239,125,0.5)", duration: 0.4 }, 39.5);
-    tl.to("#s2-ware", { background: "rgba(20, 25, 40, 0.7)", borderColor: "rgba(255,255,255,0.1)", boxShadow: "0 20px 40px rgba(0,0,0,0.6)", duration: 1.0 }, 40.5);
-
-    tl.set("#s2-sub", { innerHTML: "Services process and complete independently.<br/><span style='color:#38ef7d; font-weight:600;'>The system is responsive, resilient, and decoupled.</span>" }, 41.5);
-    tl.from("#s2-sub", { opacity: 0.5, duration: 0.5 }, 41.6);
-    
-    tl.to("#s2-broker", { backgroundColor: "rgba(56,239,125,0.05)", boxShadow: "0 20px 40px rgba(0,0,0,0.6)", duration: 1.5 }, 34.0);
-    tl.to("#s2-order", { borderColor: "rgba(0,242,254,0.3)", boxShadow: "0 20px 40px rgba(0,0,0,0.6)", duration: 1.5 }, 34.0);
-
-    // Additional fade out for end
-    tl.to("#scene2-inner", { opacity: 0, duration: 1.5, ease: "power2.inOut" }, 43.0);
-    tl.set("#scene2-inner", { opacity: 0, visibility: "hidden" }, 44.5);
-
-    // Register timeline
-    window.__timelines["main"] = tl;
+    // Register
+    window.__timelines["broker-viz"] = tl;
   </script>
 </body>
 </html>
