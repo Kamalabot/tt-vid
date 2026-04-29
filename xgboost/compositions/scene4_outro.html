@@ -1,0 +1,260 @@
+<template id="scene4-template">
+    <div id="scene4-root" data-composition-id="scene4_outro" data-width="1080" data-height="1920" data-duration="5" data-start="0">
+        <style>
+            [data-composition-id="scene4_outro"] {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                background: transparent;
+                font-family: 'Outfit', sans-serif;
+            }
+
+            [data-composition-id="scene4_outro"] .grid-rules {
+                position: absolute;
+                width: 200%;
+                height: 200%;
+                display: grid;
+                grid-template-columns: repeat(10, 1fr);
+                gap: 20px;
+                opacity: 0.15;
+                transform: rotate(-15deg);
+                z-index: 1;
+            }
+
+            [data-composition-id="scene4_outro"] .rule-box {
+                border: 2px solid #2D3436;
+                padding: 10px;
+                font-size: 14px;
+                font-family: monospace;
+            }
+
+            [data-composition-id="scene4_outro"] .content-final {
+                position: relative;
+                z-index: 10;
+                text-align: center;
+                padding: 0 40px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            [data-composition-id="scene4_outro"] .terminal {
+                position: absolute;
+                top: 150px; /* Positioned at the top, above the dense tree tail */
+                width: 960px;
+                background: rgba(17, 17, 17, 0.9); /* Slight transparency */
+                border: 2px solid #333;
+                border-radius: 12px;
+                box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+                padding: 40px;
+                text-align: left;
+                font-family: 'Courier New', Courier, monospace;
+                color: #00FF41; 
+                font-size: 42px;
+                opacity: 0;
+                transform: translateY(20px);
+                z-index: 25; 
+            }
+
+            [data-composition-id="scene4_outro"] .node {
+                stroke: rgba(0,0,0,0.3);
+                stroke-width: 3;
+            }
+
+            [data-composition-id="scene4_outro"] .link {
+                stroke: #2D3436;
+                stroke-width: 8; /* Thick bold lines */
+                stroke-linecap: round;
+                opacity: 0.5;
+            }
+
+            [data-composition-id="scene4_outro"] .terminal-header {
+                display: flex;
+                gap: 12px;
+                margin-bottom: 20px;
+            }
+
+            [data-composition-id="scene4_outro"] .dot-t {
+                width: 15px; height: 15px; border-radius: 50%;
+            }
+
+            [data-composition-id="scene4_outro"] .model-tree-title {
+                position: absolute;
+                top: 20px;
+                left: 0;
+                width: 100%;
+                font-size: 110px;
+                font-weight: 900;
+                color: #2D3436;
+                text-align: center;
+                opacity: 0;
+                z-index: 20;
+                letter-spacing: -2px;
+            }
+
+            [data-composition-id="scene4_outro"] .tree-reveal {
+                position: absolute;
+                top: 100px; /* Pushed down to start below terminal */
+                left: 0;
+                width: 100%;
+                height: 1600px;
+                z-index: 1;
+                overflow: hidden;
+                clip-path: inset(0 0 100% 0); 
+            }
+
+            [data-composition-id="scene4_outro"] .tree-graph {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                opacity: 1;
+            }
+
+            [data-composition-id="scene4_outro"] .final-title {
+                font-size: 96px;
+                font-weight: 900;
+                color: #2D3436;
+                margin-bottom: 0;
+                opacity: 0;
+            }
+
+            [data-composition-id="scene4_outro"] p {
+                font-size: 42px;
+                color: #636E72;
+                margin-top: 10px;
+                opacity: 0;
+            }
+
+            [data-composition-id="scene4_outro"] .logo {
+                width: 200px;
+                height: 200px;
+                background: #FF7675;
+                border-radius: 40px;
+                margin-bottom: 40px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                color: white;
+                font-size: 80px;
+                font-weight: bold;
+                opacity: 0;
+                transform: scale(0.5);
+            }
+        </style>
+
+        <div class="grid-rules" id="grid"></div>
+
+        <div class="content-final">
+            <h2 class="model-tree-title">Model Tree</h2>
+            <div class="tree-reveal">
+                <svg class="tree-graph" id="massive-tree" viewBox="0 0 1080 1920">
+                    <!-- Layers will be injected here -->
+                </svg>
+            </div>
+
+            <div class="terminal">
+                <div class="terminal-header">
+                    <div class="dot-t" style="background: #ff5f56;"></div>
+                    <div class="dot-t" style="background: #ffbd2e;"></div>
+                    <div class="dot-t" style="background: #27c93f;"></div>
+                </div>
+                <div class="code-text">
+                    &gt; booster.trees_to_dataframe()<br>
+                    <span style="color: #27c93f;">[Extracting 1,000 logic gates...]</span>
+                </div>
+            </div>
+            <div class="logo">XG</div>
+            <h1 class="final-title">XGBoost</h1>
+            <p class="final-sub">The Automated Rule Engine.</p>
+        </div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+        <script>
+            (function() {
+                const compId = '[data-composition-id="scene4_outro"]';
+                const grid = document.querySelector('[data-composition-id="scene4_outro"] #grid');
+                const tree = document.querySelector('[data-composition-id="scene4_outro"] #massive-tree');
+                const colors = ['#FAB1A0', '#FF7675', '#74B9FF', '#A29BFE', '#55E6C1'];
+                
+                // Reverted to 13-layer tree (Full Depth)
+                function generateTree() {
+                    let currentLevelNodes = [{x: 540, y: 0, level: 0}];
+                    let html = '';
+                    const layers = 13; 
+                    const gapY = 120; // Tight vertical spacing for depth
+                    
+                    for(let level = 1; level < layers; level++) {
+                        const nextLevelNodes = [];
+                        currentLevelNodes.forEach((parent, i) => {
+                            const count = (level < 3) ? 2 : (i % 3 === 0 ? 1 : 0);
+                            for(let j = 0; j < count; j++) {
+                                const xOffset = (j === 0 && count === 2 ? -1 : 1) * (400 / Math.pow(1.15, level));
+                                const node = {
+                                    x: parent.x + xOffset,
+                                    y: parent.y + gapY,
+                                    level: level
+                                };
+                                html += `<line class="link" x1="${parent.x}" y1="${parent.y}" x2="${node.x}" y2="${node.y}" />`;
+                                nextLevelNodes.push(node);
+                            }
+                        });
+                        
+                        currentLevelNodes.forEach((n, i) => {
+                            const color = colors[(n.level + i) % colors.length];
+                            html += `<circle class="node" cx="${n.x}" cy="${n.y}" r="24" fill="${color}" />`; 
+                        });
+                        
+                        currentLevelNodes = nextLevelNodes;
+                    }
+                    currentLevelNodes.forEach((n, i) => {
+                        const color = colors[(n.level + i) % colors.length];
+                        html += `<circle class="node" cx="${n.x}" cy="${n.y}" r="24" fill="${color}" />`;
+                    });
+                    
+                    tree.innerHTML = html;
+                }
+                
+                generateTree();
+
+                let seed = 789;
+                // Create dummy rules for the background
+                for (let i = 0; i < 100; i++) {
+                    const box = document.createElement('div');
+                    box.className = 'rule-box';
+                    seed = (1103515245 * seed + 12345) % 0x80000000;
+                    box.innerText = `IF val > ${Math.floor((seed / 0x7FFFFFFF) * 100)}`;
+                    grid.appendChild(box);
+                }
+
+                window.__timelines = window.__timelines || {};
+                const tl = gsap.timeline({ paused: true });
+                window.__timelines["scene4_outro"] = tl;
+
+                // Extraction animation
+                tl.to('[data-composition-id="scene4_outro"] .model-tree-title', { opacity: 1, y: 30, duration: 1, ease: "power2.out" }, 0.1);
+                tl.to('[data-composition-id="scene4_outro"] .tree-reveal', { clipPath: 'inset(0 0 0% 0)', duration: 1.5, ease: "power2.inOut" }, 0.3);
+                tl.to('[data-composition-id="scene4_outro"] .terminal', { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }, 1.2);
+                tl.from('[data-composition-id="scene4_outro"] .code-text', { opacity: 0, duration: 0.5 }, 1.5);
+                
+                // Transition to final branding
+                tl.to(['[data-composition-id="scene4_outro"] .terminal', '[data-composition-id="scene4_outro"] .tree-reveal'], { opacity: 0, scale: 0.9, duration: 0.6, ease: "power2.in" }, 3.5);
+                
+                tl.to('[data-composition-id="scene4_outro"] .logo', { opacity: 1, scale: 1, duration: 0.8, ease: "back.out(1.7)" }, 3.8);
+                tl.to('[data-composition-id="scene4_outro"] .final-title', { opacity: 1, y: -20, duration: 0.6 }, 4.1);
+                tl.to('[data-composition-id="scene4_outro"] .final-sub', { opacity: 1, y: -10, duration: 0.6 }, 4.3);
+
+                tl.to('[data-composition-id="scene4_outro"] .grid-rules', { 
+                    x: -100, 
+                    y: -100, 
+                    duration: 5, 
+                    ease: "none" 
+                }, 0);
+            })();
+        </script>
+    </div>
+</template>
