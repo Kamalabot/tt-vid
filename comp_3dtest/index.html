@@ -41,7 +41,7 @@
         justify-content: center;
         transform-style: preserve-3d;
       }
-      
+
       .vibrant-bg {
         position: absolute;
         width: 100%;
@@ -68,7 +68,7 @@
         position: absolute;
         width: 4000px;
         height: 4000px;
-        background-image: 
+        background-image:
           linear-gradient(to right, rgba(0, 242, 255, 0.1) 1px, transparent 1px),
           linear-gradient(to bottom, rgba(0, 242, 255, 0.1) 1px, transparent 1px);
         background-size: 100px 100px;
@@ -118,7 +118,6 @@
         border: inherit;
       }
 
-      /* 3D Cube Faces */
       .face-front  { transform: translateZ(50px); }
       .face-back   { transform: rotateY(180deg) translateZ(50px); }
       .face-right  { transform: rotateY(90deg) translateZ(50px); }
@@ -133,12 +132,12 @@
       id="root"
       data-composition-id="main"
       data-start="0"
-      data-duration="18"
+      data-duration="12"
       data-width="1920"
       data-height="1080"
     >
       <!-- Vibrant Background -->
-      <div id="bg-clip" class="clip" data-start="0" data-duration="10" data-track-index="0">
+      <div id="bg-clip" class="clip" data-start="0" data-duration="12" data-track-index="0">
         <div class="vibrant-bg"></div>
         <div class="color-blob blob-1"></div>
         <div class="color-blob blob-2"></div>
@@ -146,12 +145,12 @@
       </div>
 
       <!-- Background Grid -->
-      <div id="grid-clip" class="clip" data-start="0" data-duration="10" data-track-index="1">
+      <div id="grid-clip" class="clip" data-start="0" data-duration="12" data-track-index="1">
         <div class="grid-3d"></div>
       </div>
 
       <!-- Floating Shapes -->
-      <div id="shapes-clip" class="clip" data-start="0" data-duration="10" data-track-index="2">
+      <div id="shapes-clip" class="clip" data-start="0" data-duration="12" data-track-index="2">
         <div id="cube1" class="floating-cube">
           <div class="cube-face face-front"></div>
           <div class="cube-face face-back"></div>
@@ -170,23 +169,34 @@
         </div>
       </div>
 
-      <!-- Main Title -->
-      <div id="title-clip" class="clip" data-start="0" data-duration="10" data-track-index="3">
+      <!-- Scene 1: Main Title -->
+      <div id="title-clip" class="clip" data-start="0" data-duration="4" data-track-index="3">
         <div class="title-wrap">
-          <h1 class="main-title">GSAP 3D</h1>
-          <p class="subtitle">Enter the Dimension</p>
+          <h1 class="main-title">HyperFrames</h1>
+          <p class="subtitle">Next-Gen Compositions</p>
         </div>
       </div>
 
-      <!-- Three.js Scene -->
+      <!-- Scene 2: Bouncing Text -->
       <div 
-        id="scene1-container" 
+        id="ai-text-container" 
         class="clip" 
-        data-start="10" 
-        data-duration="8" 
+        data-composition-src="compositions/ai_bouncing_text.html" 
+        data-composition-id="ai_bouncing_text" 
+        data-start="4" 
+        data-duration="4" 
         data-track-index="4"
-        data-composition-src="compositions/scene1_threejs.html"
-        data-composition-id="scene1_threejs"
+      ></div>
+
+      <!-- Scene 3: Three.js Depth -->
+      <div 
+        id="threejs-container" 
+        class="clip" 
+        data-composition-src="compositions/scene1_threejs.html" 
+        data-composition-id="scene1_threejs" 
+        data-start="8" 
+        data-duration="4" 
+        data-track-index="5"
       ></div>
     </div>
 
@@ -195,16 +205,16 @@
       const tl = gsap.timeline({ paused: true });
 
       // Vibrant Background Animation
-      tl.to(".blob-1", { duration: 10, x: 200, y: 100, scale: 1.2, ease: "sine.inOut" }, 0);
-      tl.to(".blob-2", { duration: 10, x: -300, y: -200, scale: 1.5, ease: "sine.inOut" }, 0);
-      tl.to(".blob-3", { duration: 10, scale: 0.8, opacity: 0.2, ease: "sine.inOut" }, 0);
+      tl.to(".blob-1", { duration: 12, x: 200, y: 100, scale: 1.2, ease: "sine.inOut" }, 0);
+      tl.to(".blob-2", { duration: 12, x: -300, y: -200, scale: 1.5, ease: "sine.inOut" }, 0);
+      tl.to(".blob-3", { duration: 12, scale: 0.8, opacity: 0.2, ease: "sine.inOut" }, 0);
 
       // Grid Initial State
       tl.set(".grid-3d", { rotationX: 70, z: -500 });
 
       // Title Animation
       tl.from(".main-title", {
-        duration: 2.5,
+        duration: 1.5,
         z: -1500,
         rotationX: 90,
         rotationY: -45,
@@ -213,15 +223,23 @@
       }, 0);
 
       tl.from(".subtitle", {
-        duration: 2,
+        duration: 1.2,
         y: 100,
         opacity: 0,
         ease: "power3.out"
-      }, 1);
+      }, 0.5);
+
+      // Title Exit
+      tl.to(".title-wrap", {
+        duration: 0.8,
+        opacity: 0,
+        y: -100,
+        ease: "power2.in"
+      }, 3.2);
 
       // Grid Animation
       tl.to(".grid-3d", {
-        duration: 10,
+        duration: 12,
         rotationZ: 45,
         y: 500,
         ease: "none"
@@ -232,9 +250,9 @@
       tl.set("#cube2", { x: 600, y: 300, z: -400 });
 
       tl.to("#cube1", {
-        duration: 10,
-        rotationX: 360,
-        rotationY: 720,
+        duration: 12,
+        rotationX: 360 * 1.5,
+        rotationY: 720 * 1.5,
         x: -400,
         y: -100,
         z: 200,
@@ -242,9 +260,9 @@
       }, 0);
 
       tl.to("#cube2", {
-        duration: 10,
-        rotationX: -720,
-        rotationY: -360,
+        duration: 12,
+        rotationX: -720 * 1.5,
+        rotationY: -360 * 1.5,
         x: 400,
         y: 100,
         z: 0,
@@ -253,12 +271,12 @@
 
       // Glow pulse
       tl.to(".main-title", {
-        duration: 2,
+        duration: 1,
         filter: "drop-shadow(0 0 50px rgba(0, 242, 255, 0.6))",
-        repeat: 4,
+        repeat: 2,
         yoyo: true,
         ease: "sine.inOut"
-      }, 2);
+      }, 1);
 
       window.__timelines["main"] = tl;
     </script>

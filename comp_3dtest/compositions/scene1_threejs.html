@@ -2,7 +2,7 @@
   <div
     data-composition-id="scene1_threejs"
     data-start="0"
-    data-duration="8"
+    data-duration="4"
     data-width="1920"
     data-height="1080"
   >
@@ -33,13 +33,14 @@
       }
     </style>
 
-    <div class="clip" data-start="0" data-duration="8" data-track-index="1">
+    <div class="clip" data-start="0" data-duration="4" data-track-index="1">
       <div id="three-container"></div>
       <div class="overlay-text">THREE.JS DEPTH</div>
     </div>
 
     <script>
       (function() {
+        const compositionId = "scene1_threejs";
         const container = document.querySelector('[data-composition-id="scene1_threejs"] #three-container');
         
         // Scene Setup
@@ -75,35 +76,42 @@
           }
         });
 
-        // Animations
+        // Animations (4s)
         tl.from('[data-composition-id="scene1_threejs"] .overlay-text', {
-          duration: 2,
+          duration: 1.5,
           scale: 0.5,
           opacity: 0,
           ease: "expo.out"
         }, 0);
 
         tl.to(torusKnot.rotation, {
-          duration: 8,
-          x: Math.PI * 2,
-          y: Math.PI * 4,
+          duration: 4,
+          x: Math.PI,
+          y: Math.PI * 2,
           ease: "none"
         }, 0);
 
         tl.to(camera.position, {
-          duration: 4,
+          duration: 2,
           z: 50,
           ease: "sine.inOut",
           yoyo: true,
           repeat: 1
         }, 0);
 
+        tl.to('[data-composition-id="scene1_threejs"] .overlay-text', {
+          duration: 0.8,
+          opacity: 0,
+          y: 50,
+          ease: "power2.in"
+        }, 3.2);
+
         // Initial Render
         renderer.render(scene, camera);
 
         // Register with HyperFrames
         window.__timelines = window.__timelines || {};
-        window.__timelines["scene1_threejs"] = tl;
+        window.__timelines[compositionId] = tl;
       })();
     </script>
   </div>

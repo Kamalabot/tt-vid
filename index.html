@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Inventory - GitHub Pages</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Video Inventory</h1>
+            <p>A curated collection of rendered clips and animations from the tt-vid project.</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="filters" id="categoryFilters">
+            <button class="filter-btn active" data-category="all">All Videos</button>
+        </div>
+
+        <div class="video-grid" id="videoGrid">
+            <!-- Videos will be injected here -->
+        </div>
+    </main>
+
+    <script>
+        const videos = [
+            { path: 'simple.mp4', name: 'simple.mp4', category: 'Root', description: 'A foundational test render used to verify basic video encoding and playback settings.' },
+            { path: 'code2mp4/renders/codeNotEnuf.mp4', name: 'codeNotEnuf.mp4', category: 'code2mp4', description: 'Explores the limitations of raw code without proper context or visual aids.' },
+            { path: 'code2mp4/renders/codeNotEnuf_eng.mp4', name: 'codeNotEnuf_eng.mp4', category: 'code2mp4', description: 'English version explaining why code documentation is essential for clarity.' },
+            { path: 'code2mp4/renders/linkedlist.mp4', name: 'linkedlist.mp4', category: 'code2mp4', description: 'A visual breakdown of Linked List nodes and pointers, demonstrating how data flows.' },
+            { path: 'code2mp4/renders/pythonfiles.mp4', name: 'pythonfiles.mp4', category: 'code2mp4', description: 'Visualizing Python file structures and module dependencies in a project.' },
+            { path: 'comp_3dtest/renders/comp_3dtest_2026-04-29_18-15-51.mp4', name: 'comp_3dtest_2026-04-29_18-15-51.mp4', category: 'comp_3dtest', description: 'Technical demo of 3D composition layers and lighting effects in video rendering.' },
+            { path: 'dtree/simple.mp4', name: 'simple.mp4', category: 'dtree', description: 'An animated demonstration of a Decision Tree algorithm splitting data based on conditions.' },
+            { path: 'free-tools/renders/adobe_figma.mp4', name: 'adobe_figma.mp4', category: 'free-tools', description: 'Comparison and workflow integration between Adobe Creative Cloud and Figma.' },
+            { path: 'free-tools/renders/canva_maxxon.mp4', name: 'canva_maxxon.mp4', category: 'free-tools', description: 'Showcasing creative possibilities using Canva in conjunction with Maxxon tools.' },
+            { path: 'free-tools/renders/free-tools_2026-04-26_09-20-47.mp4', name: 'free-tools_2026-04-26_09-20-47.mp4', category: 'free-tools', description: 'A showcase of essential free-to-use tools for modern developers and designers.' },
+            { path: 'free-tools/renders/gsap_hf.mp4', name: 'gsap_hf.mp4', category: 'free-tools', description: 'Demonstrating high-performance animations using the GSAP library.' },
+            { path: 'img-mp4/renders/img-mp4-withimg.mp4', name: 'img-mp4-withimg.mp4', category: 'img-mp4', description: 'Test render demonstrating image overlays and transitions within a video.' },
+            { path: 'img-mp4/renders/img2mp4.mp4', name: 'img2mp4.mp4', category: 'img-mp4', description: 'A proof-of-concept for automated conversion of static images into video formats.' },
+            { path: 'ktype/simple.mp4', name: 'simple.mp4', category: 'ktype', description: 'Animated typography demo showcasing the "K-Type" font and motion styles.' },
+            { path: 'multilang00/renders/multilang00.mp4', name: 'multilang00.mp4', category: 'multilang00', description: 'Demonstration of multi-language subtitle rendering and dynamic text translation.' },
+            { path: 'my-video/renders/my-video_2026-04-24_09-25-46.mp4', name: 'my-video_2026-04-24_09-25-46.mp4', category: 'my-video', description: 'Personalized video template showcasing custom branding and layout options.' },
+            { path: 'nytdemo/simple.mp4', name: 'simple.mp4', category: 'nytdemo', description: 'Visual style demo inspired by the clean, data-driven aesthetics of The New York Times.' },
+            { path: 'pdtpromo/simple.mp4', name: 'simple.mp4', category: 'pdtpromo', description: 'Marketing-focused render designed for product promotion and feature highlights.' },
+            { path: 'pmode/simple.mp4', name: 'simple.mp4', category: 'pmode', description: 'UI walkthrough of "Planning Mode" features within the application interface.' },
+            { path: 'prd2mp4/renders/prd2mp4.mp4', name: 'prd2mp4.mp4', category: 'prd2mp4', description: 'Visualizing the "Production to MP4" automated export pipeline.' },
+            { path: 'prob2vis00/renders/final_good_vis.mp4', name: 'final_good_vis.mp4', category: 'prob2vis00', description: 'Final visualization of complex problem-solving steps and logical outcomes.' },
+            { path: 'prob2vis00/renders/prob2vis_justetxt.mp4', name: 'prob2vis_justetxt.mp4', category: 'prob2vis00', description: 'Text-only version of the problem-to-visualization workflow for clarity.' },
+            { path: 'swgrid/simple.mp4', name: 'simple.mp4', category: 'swgrid', description: 'Displaying responsive software grid layouts and alignment guides.' },
+            { path: 'sysauto/renders/coffeeout.mp4', name: 'coffeeout.mp4', category: 'sysauto', description: 'Automation script demo: A fun visualization of a "coffee break" system trigger.' },
+            { path: 'sysauto/renders/excelout.mp4', name: 'excelout.mp4', category: 'sysauto', description: 'Demonstrating automated Excel data extraction and report generation.' },
+            { path: 'sysauto/renders/snipped_out.mp4', name: 'snipped_out.mp4', category: 'sysauto', description: 'Workflow showing automated screen capture and snippet processing.' },
+            { path: 'sysauto/renders/sysauto_2026-04-25_16-12-01.mp4', name: 'sysauto_2026-04-25_16-12-01.mp4', category: 'sysauto', description: 'Test render focusing on system automation reliability.' },
+            { path: 'sysauto/renders/sysauto_2026-04-25_16-13-57.mp4', name: 'sysauto_2026-04-25_16-13-57.mp4', category: 'sysauto', description: 'Automation execution audit trail visualization.' },
+            { path: 'sysauto/renders/sysauto_2026-04-25_16-18-26.mp4', name: 'sysauto_2026-04-25_16-18-26.mp4', category: 'sysauto', description: 'Performance monitoring of background automation tasks.' },
+            { path: 'sysauto/renders/sysauto_2026-04-25_18-34-58.mp4', name: 'sysauto_2026-04-25_18-34-58.mp4', category: 'sysauto', description: 'End-to-end automation cycle test.' },
+            { path: 'sysauto/renders/sysauto_2026-04-25_20-16-46.mp4', name: 'sysauto_2026-04-25_20-16-46.mp4', category: 'sysauto', description: 'Scheduled automation task verification.' },
+            { path: 'sysauto/renders/sys_inout.mp4', name: 'sys_inout.mp4', category: 'sysauto', description: 'Overview of system input and output streams in an automated environment.' },
+            { path: 'sysdev/renders/asking_ai.mp4', name: 'asking_ai.mp4', category: 'sysdev', description: 'Visualization of an interactive session between a developer and an AI assistant.' },
+            { path: 'sysdev/renders/tamil_render.mp4', name: 'tamil_render.mp4', category: 'sysdev', description: 'Specialized render testing Tamil language character support and rendering.' },
+            { path: 'uber_budget/renders/uber_budget_20.mp4', name: 'uber_budget_20.mp4', category: 'uber_budget', description: 'Data-driven animation of budget allocations and spending patterns.' },
+            { path: 'vid_test/simple.mp4', name: 'simple.mp4', category: 'vid_test', description: 'Basic video quality and framerate verification test.' },
+            { path: 'vig_test/simple.mp4', name: 'simple.mp4', category: 'vig_test', description: 'Testing vignette aesthetic effects and soft edge transitions.' },
+            { path: 'wg_test/simple.mp4', name: 'simple.mp4', category: 'wg_test', description: 'Testing WebGL integration and GPU-accelerated rendering in video.' }
+        ];
+
+        const videoGrid = document.getElementById('videoGrid');
+        const filtersContainer = document.getElementById('categoryFilters');
+
+        // Extract unique categories
+        const categories = ['all', ...new Set(videos.map(v => v.category))];
+
+        // Create filter buttons
+        categories.forEach(cat => {
+            if (cat === 'all') return;
+            const btn = document.createElement('button');
+            btn.className = 'filter-btn';
+            btn.textContent = cat;
+            btn.dataset.category = cat;
+            filtersContainer.appendChild(btn);
+        });
+
+        function renderVideos(filter = 'all') {
+            videoGrid.innerHTML = '';
+            const filtered = filter === 'all' ? videos : videos.filter(v => v.category === filter);
+
+            filtered.forEach(video => {
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                card.innerHTML = `
+                    <div class="video-wrapper">
+                        <video controls preload="metadata">
+                            <source src="${video.path}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-category">${video.category}</div>
+                        <div class="card-title">${video.name}</div>
+                        <div class="card-description">${video.description}</div>
+                        <div class="card-path">${video.path}</div>
+                    </div>
+                `;
+                videoGrid.appendChild(card);
+            });
+        }
+
+        // Filter functionality
+        filtersContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('filter-btn')) {
+                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                renderVideos(e.target.dataset.category);
+            }
+        });
+
+        // Initial render
+        renderVideos();
+    </script>
+</body>
+</html>
