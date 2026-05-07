@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>The-Studio. Pitch Deck</title>
+  <script src="https://cdn.jsdelivr.net/npm/@marp-team/marpit/dist/marpit.browser.js"></script>
+</head>
+<body>
+  <div id="presentation"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const markdown = `
+---
+marp: true
+theme: brutalist-experimental
+size: 16:9
+paginate: true
+---
+
+<!-- _class: cover -->
+
+# The-Studio.
+A Design Practice for the Next Decade.
+
+---
+
+## Redefining Digital Craft.
+
+<p class="drop-cap">We believe in the power of focused, intentional design to create lasting value. In a world saturated with fleeting digital trends, we build products and brands that are clear, honest, and enduring. Our practice is a rejection of the superficial, a commitment to the substantial.</p>
+
+---
+
+## The Opportunity.
+
+The demand for authenticity is a rising tide. We see a clear market opening for a studio that prioritizes deep partnership and tangible results over disposable aesthetics.
+
+*   **Founder-led brands** seeking strategic design partners.
+*   **Tech companies** tired of the "sea of sameness."
+*   **Cultural institutions** that need to translate their legacy for a digital world.
+
+---
+
+<!-- _class: full-bleed -->
+
+![bg grayscale](https://images.unsplash.com/photo-1522204523234-8729aa6e3d5f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1920&q=80)
+
+---
+
+## Early Proof.
+
+Our approach is already resonating. In our first six months, we have:
+
+*   Partnered with **Luminar** to redesign their flagship mobile application.
+*   Achieved **$150k** in initial project revenue.
+*   Been featured in **Design Weekly** for our work on the Arbor Institute's digital archive.
+*   Built a waitlist of **5 qualified clients**.
+
+---
+
+## The Founders.
+
+<div class="grid">
+<div class="col-6">
+<h3>Jane Doe</h3>
+<h4>CEO & Strategist</h4>
+<p>12 years of experience leading design teams at top-tier agencies and in-house at companies like Vercel and Stripe. Jane's focus is on translating business goals into design strategy.</p>
+</div>
+<div class="col-6">
+<h3>John Smith</h3>
+<h4>Creative Director</h4>
+<p>A designer's designer, John's work has been recognized by Awwwards and the Webbys. His passion is for pure, uncompromising typography and system design. He previously led brand at Notion.</p>
+</div>
+</div>
+
+---
+
+<!-- _class: cover -->
+
+# $500,000
+For 10% equity.
+
+To hire two senior product designers and build out our studio space.
+
+---
+
+<!-- _class: cover -->
+
+# Get in Touch.
+
+hello@the-studio.design
+[the-studio.design](https://the-studio.design)
+    `;
+
+      const theme = `
+/* @theme brutalist-experimental */
+
+section {
+  background-color: oklch(96% 0.004 100);
+  color: oklch(15% 0.02 100);
+  font-family: ui-monospace, 'IBM Plex Mono', 'JetBrains Mono', Menlo, monospace;
+  padding: 5vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-size: 24px;
+}
+
+h1 {
+  font-family: 'Times New Roman', 'Iowan Old Style', Georgia, serif;
+  font-size: clamp(80px, 12vw, 200px);
+  line-height: 0.9;
+  margin: 0;
+  font-weight: 400;
+  color: oklch(15% 0.02 100);
+}
+
+h2 {
+    font-family: 'Times New Roman', 'Iowan Old Style', Georgia, serif;
+    font-size: 4rem;
+    font-weight: 400;
+    color: oklch(15% 0.02 100);
+    margin: 0 0 2rem 0;
+}
+
+h3 {
+    font-family: 'Times New Roman', 'Iowan Old Style', Georgia, serif;
+    font-size: 2rem;
+    font-weight: 400;
+    margin: 0;
+}
+
+h4 {
+    font-family: ui-monospace, 'IBM Plex Mono', 'JetBrains Mono', Menlo, monospace;
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: oklch(40% 0.02 100);
+    margin: 0 0 1rem 0;
+}
+
+p, ul, ol {
+    font-size: 1.5rem;
+    line-height: 1.4;
+    max-width: 75%;
+}
+
+a {
+  color: oklch(15% 0.02 100);
+  text-decoration: underline;
+}
+
+a:hover {
+  color: oklch(60% 0.22 25);
+}
+
+/* Slide-specific styles */
+section.cover {
+  justify-content: center;
+  text-align: center;
+}
+
+section.full-bleed {
+    padding: 0;
+    background-size: cover;
+    background-position: center;
+}
+
+/* Drop Cap */
+p.drop-cap::first-letter {
+  font-family: 'Times New Roman', 'Iowan Old Style', Georgia, serif;
+  font-weight: bold;
+  font-size: 4em;
+  float: left;
+  line-height: 0.8;
+  margin-right: 0.1em;
+  color: oklch(60% 0.22 25);
+}
+
+/* Monospace Section Numbers */
+section::after {
+  content: '0' attr(data-marp-pagination);
+  position: absolute;
+  bottom: 40px;
+  right: 50px;
+  font-family: ui-monospace, 'IBM Plex Mono', 'JetBrains Mono', Menlo, monospace;
+  font-size: 1.2rem;
+  color: oklch(40% 0.02 100);
+}
+
+/* Swiss Grid */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-gap: 20px;
+    width: 100%;
+    height: 100%;
+}
+
+.grid .col-4 {
+    grid-column: span 4;
+}
+
+.grid .col-6 {
+    grid-column: span 6;
+}
+
+.grid .col-8 {
+    grid-column: span 8;
+}
+    `;
+
+      const marpit = new Marpit();
+      marpit.themeSet.add(theme);
+      const { html, css } = marpit.render(markdown);
+
+      const style = document.createElement('style');
+      style.textContent = css;
+      document.head.appendChild(style);
+
+      document.getElementById('presentation').innerHTML = html;
+    });
+  </script>
+</body>
+</html>

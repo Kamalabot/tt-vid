@@ -1,0 +1,114 @@
+/* @theme brutalist-experimental */
+
+section {
+  background-color: oklch(96% 0.004 100);
+  color: oklch(15% 0.02 100);
+  font-family: ui-monospace, 'IBM Plex Mono', 'JetBrains Mono', Menlo, monospace;
+  padding: 5vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-size: 24px;
+}
+
+h1 {
+  font-family: 'Times New Roman', 'Iowan Old Style', Georgia, serif;
+  font-size: clamp(80px, 12vw, 200px);
+  line-height: 0.9;
+  margin: 0;
+  font-weight: 400;
+  color: oklch(15% 0.02 100);
+}
+
+h2 {
+    font-family: 'Times New Roman', 'Iowan Old Style', Georgia, serif;
+    font-size: 4rem;
+    font-weight: 400;
+    color: oklch(15% 0.02 100);
+    margin: 0 0 2rem 0;
+}
+
+h3 {
+    font-family: 'Times New Roman', 'Iowan Old Style', Georgia, serif;
+    font-size: 2rem;
+    font-weight: 400;
+    margin: 0;
+}
+
+h4 {
+    font-family: ui-monospace, 'IBM Plex Mono', 'JetBrains Mono', Menlo, monospace;
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: oklch(40% 0.02 100);
+    margin: 0 0 1rem 0;
+}
+
+p, ul, ol {
+    font-size: 1.5rem;
+    line-height: 1.4;
+    max-width: 75%;
+}
+
+a {
+  color: oklch(15% 0.02 100);
+  text-decoration: underline;
+}
+
+a:hover {
+  color: oklch(60% 0.22 25);
+}
+
+/* Slide-specific styles */
+section.cover {
+  justify-content: center;
+  text-align: center;
+}
+
+section.full-bleed {
+    padding: 0;
+    background-size: cover;
+    background-position: center;
+}
+
+/* Drop Cap */
+p.drop-cap::first-letter {
+  font-family: 'Times New Roman', 'Iowan Old Style', Georgia, serif;
+  font-weight: bold;
+  font-size: 4em;
+  float: left;
+  line-height: 0.8;
+  margin-right: 0.1em;
+  color: oklch(60% 0.22 25);
+}
+
+/* Monospace Section Numbers */
+section::after {
+  content: '0' attr(data-marp-pagination);
+  position: absolute;
+  bottom: 40px;
+  right: 50px;
+  font-family: ui-monospace, 'IBM Plex Mono', 'JetBrains Mono', Menlo, monospace;
+  font-size: 1.2rem;
+  color: oklch(40% 0.02 100);
+}
+
+/* Swiss Grid */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-gap: 20px;
+    width: 100%;
+    height: 100%;
+}
+
+.grid .col-4 {
+    grid-column: span 4;
+}
+
+.grid .col-6 {
+    grid-column: span 6;
+}
+
+.grid .col-8 {
+    grid-column: span 8;
+}

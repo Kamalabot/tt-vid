@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "The-Studio. Pitch Deck",
+  "entry": "the-studio-pitch-deck.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-05-05T02:48:25.548Z",
+  "updatedAt": "2026-05-05T02:48:25.695Z",
+  "sourceSkillId": "blog-post",
+  "designSystemId": "bmw",
+  "metadata": {
+    "identifier": "the-studio-pitch-deck",
+    "artifactType": "text/html",
+    "inferred": false
+  }
+}
