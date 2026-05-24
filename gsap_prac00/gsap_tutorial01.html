@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GSAP v3 Local Production Engine Laboratory</title>
+    
+    <script src="gsap/dist/gsap.min.js"></script>
+    <script src="gsap/dist/ScrollTrigger.min.js"></script>
+    <script src="gsap/dist/Draggable.min.js"></script>
+    <script src="gsap/dist/TextPlugin.min.js"></script>
+    <script src="gsap/dist/EasePack.min.js"></script>
+    <script src="gsap/dist/MotionPathPlugin.min.js"></script>
+
+    <style>
+        :root {
+            --bg-base: #0f172a;
+            --bg-panel: #1e293b;
+            --border: #334155;
+            --text: #f8fafc;
+            --brand: #ea580c;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --purple: #8b5cf6;
+        }
+        body {
+            background-color: var(--bg-base);
+            color: var(--text);
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        .header-bar {
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            padding: 20px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+        }
+        .badge {
+            background: #090d16;
+            color: var(--success);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            border: 1px solid var(--border);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 120px auto 60px auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .lab-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        h2 { margin-top: 0; color: var(--brand); font-size: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        p { color: #94a3b8; font-size: 0.9rem; margin: 0 0 15px 0; }
+        
+        .workspace {
+            background: #090d16;
+            border-radius: 8px;
+            height: 180px;
+            position: relative;
+            padding: 15px;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+        
+        /* Interactive Targets */
+        .box {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            position: absolute;
+        }
+        .b-text { background: var(--accent); position: relative; width: 100%; height: 100%; border: none; font-size: 1.5rem; font-family: monospace; color: var(--success); display: flex; align-items: center;}
+        .b-drag { background: var(--success); cursor: grab; top: 40px; left: 40px; }
+        .b-motion { background: var(--purple); top: 60px; left: 20px; }
+        .b-scroll { background: #ec4899; top: 45px; left: 20px; }
+        
+        button {
+            background: var(--brand);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 15px;
+            align-self: flex-start;
+        }
+        button:hover { opacity: 0.9; }
+        .scroll-trigger-zone {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+        .scroll-spacer {
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #475569;
+            border-left: 2px dashed var(--border);
+            margin: 15px 0;
+            font-style: italic;
+        }
+        
+        /* Motion Path SVG path overlay visible for guide purposes */
+        svg.guide-path {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-bar">
+        <h1 style="margin:0; font-size:1.3rem;">GSAP Local Core + Plugins Environment</h1>
+        <div class="badge">Source: node_modules/gsap/dist/*</div>
+    </div>
+
+    <div class="container">
+        
+        <div class="grid-layout">
+            <div class="lab-card">
+                <div>
+                    <h2>TextPlugin Terminal Emulator</h2>
+                    <p>Replaces string matrices and types out text characters non-destructively.</p>
+                    <div class="workspace" style="display: flex; align-items: center;">
+                        <div id="textTarget" class="b-text">> Initialized local stack node...</div>
+                    </div>
+                </div>
+                <button onclick="animateText()">Run Text Swap</button>
+            </div>
+
+            <div class="lab-card">
+                <div>
+                    <h2>MotionPathPlugin Vector Anchor</h2>
+                    <p>Snaps coordinates directly to an inline SVG vector geometric pathway sequence.</p>
+                    <div class="workspace" id="motion-container">
+                        <svg class="guide-path" viewBox="0 0 500 150">
+                            <path id="subway" d="M 30,75 Q 150,5 250,75 T 450,75" fill="none" stroke="#334155" stroke-width="2" stroke-dasharray="4 4"/>
+                        </svg>
+                        <div id="motionBox" class="box b-motion">Path</div>
+                    </div>
+                </div>
+                <button onclick="animateMotionPath()">Follow Path</button>
+            </div>
+        </div>
+
+        <div class="grid-layout">
+            <div class="lab-card">
+                <div>
+                    <h2>Draggable Module Matrix</h2>
+                    <p>Enables full interactive dragging constrained strictly to the bounding window parameters.</p>
+                    <div class="workspace" id="drag-boundary">
+                        <div id="dragTarget" class="box b-drag">Drag</div>
+                    </div>
+                </div>
+                <div style="height: 15px;"></div>
+            </div>
+
+            <div class="lab-card">
+                <div>
+                    <h2>EasePack Advanced Physics Core</h2>
+                    <p>Uses customized RoughEase curves to simulate flickering, glitch, or electric power failures.</p>
+                    <div class="workspace" style="display:flex; align-items:center; justify-content:center;">
+                        <div id="glitchBox" class="box" style="background:#f59e0b; position:relative; left:0; top:0; width:80px; height:80px; display:flex; font-size:1.2rem;">⚡</div>
+                    </div>
+                </div>
+                <button onclick="animateGlitch()">Trigger Power Glitch</button>
+            </div>
+        </div>
+
+        <div class="scroll-trigger-zone">
+            <h2>ScrollTrigger Viewport Linear Engine</h2>
+            <p>Scroll your browser view down. The box playhead tracking updates interactively with the frame layout context indicators.</p>
+            <div class="scroll-spacer">↓ Scroll Downwards to Trigger Module ↓</div>
+            <div class="workspace" id="scroll-environment">
+                <div id="scrollTarget" class="box b-scroll">Trigger</div>
+            </div>
+            <div class="scroll-spacer">↑ Scroll Back Up to Reverse Animation Playhead ↑</div>
+        </div>
+
+    </div>
+
+    <script>
+        // Formally append structural definitions inside the execution engine context table
+        gsap.registerPlugin(ScrollTrigger, Draggable, TextPlugin, MotionPathPlugin, EasePack);
+
+        // 1. TextPlugin Execution Loop
+        function animateText() {
+            gsap.to("#textTarget", {
+                duration: 2,
+                text: {
+                    value: "> SUCCESS: Pulled production files successfully from your local npm distribution tree.",
+                    speed: 1
+                },
+                ease: "none"
+            });
+        }
+
+        // 2. MotionPath execution logic 
+        function animateMotionPath() {
+            gsap.to("#motionBox", {
+                duration: 2.5,
+                ease: "power1.inOut",
+                motionPath: {
+                    path: "#subway",
+                    autoRotate: true,
+                    align: "#subway",
+                    alignOrigin: [0.5, 0.5]
+                }
+            });
+        }
+
+        // 3. Draggable Instantiation
+        Draggable.create("#dragTarget", {
+            bounds: "#drag-boundary",
+            edgeResistance: 0.85,
+            type: "x,y",
+            onDragStart: function() {
+                this.target.style.cursor = 'grabbing';
+            },
+            onDragEnd: function() {
+                this.target.style.cursor = 'grab';
+            }
+        });
+
+        // 4. EasePack Glitch Logic Loop
+        function animateGlitch() {
+            gsap.fromTo("#glitchBox", 
+                { opacity: 1, scale: 1 },
+                { 
+                    opacity: 0, 
+                    scale: 0.9, 
+                    duration: 1.5,
+                    ease: "rough({ template: power1.none, strength: 3, points: 20, taper: 'none', randomize: true, clamp: true })",
+                    clearProps: "all" // Clears values back to standard state once the animation completes
+                }
+            );
+        }
+
+        // 5. ScrollTrigger Pipeline Layout setup
+        gsap.to("#scrollTarget", {
+            x: 900,
+            rotation: 360,
+            backgroundColor: "#3b82f6",
+            scale: 1.2,
+            scrollTrigger: {
+                trigger: "#scroll-environment",
+                start: "top 75%",
+                end: "bottom 25%",
+                scrub: 1.5 // 1.5s smoothing delay when responding to scroll adjustments
+            }
+        });
+    </script>
+</body>
+</html>

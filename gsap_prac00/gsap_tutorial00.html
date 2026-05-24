@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GSAP v3 Mastery Engine & Practice Lab</title>
+    <script src="gsap/dist/gsap.js"></script>
+    <script src="gsap/dist/ScrollTrigger.js"></script>
+    
+    <style>
+        :root {
+            --bg-base: #0f172a;
+            --bg-panel: #1e293b;
+            --border: #334155;
+            --text: #f8fafc;
+            --brand: #ea580c;
+            --accent: #3b82f6;
+        }
+        body {
+            background-color: var(--bg-base);
+            color: var(--text);
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: calc(100vh - 40px);
+        }
+        .left-col {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+        }
+        h2 { margin-top: 0; font-size: 1.2rem; color: var(--brand); border-bottom: 1px solid var(--border); padding-bottom: 8px;}
+        
+        /* Interactive Sandbox Area */
+        .sandbox {
+            height: 280px;
+            position: relative;
+            background: #0b0f19;
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            padding: 10px;
+        }
+        .track {
+            border-bottom: 1px dashed #223149;
+            width: 100%;
+            position: relative;
+            height: 60px;
+        }
+        .box {
+            width: 50px;
+            height: 50px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 11px;
+            position: absolute;
+            left: 20px;
+        }
+        .box-1 { background: #ef4444; }
+        .box-2 { background: #3b82f6; }
+        .box-3 { background: #10b981; }
+
+        /* Command Runner UI */
+        .command-card {
+            background: #151f32;
+            border-left: 4px solid var(--accent);
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 0 6px 6px 0;
+        }
+        .command-card h3 { margin: 0 0 6px 0; font-size: 0.95rem; }
+        .command-card p { margin: 0 0 10px 0; font-size: 0.85rem; color: #94a3b8; }
+        pre { background: #090d16; padding: 10px; border-radius: 4px; font-size: 0.85rem; margin: 0 0 10px 0; overflow-x: auto; color: #cbd5e1; }
+        button {
+            background: var(--brand);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        button:hover { opacity: 0.9; }
+        .btn-secondary { background: #475569; }
+    </style>
+</head>
+<body>
+
+    <div class="left-col">
+        <div class="panel">
+            <h2>1. Core Tween Mechanics</h2>
+            
+            <div class="command-card">
+                <h3>gsap.to() — Animate to targeted values</h3>
+                <p>Moves element properties from current state down to defined destinations.</p>
+                <pre>gsap.to(".box-1", { x: 400, rotation: 360, duration: 1.5, ease: "power2.out" });</pre>
+                <button onclick="runCode(1)">Execute Command</button>
+            </div>
+
+            <div class="command-card">
+                <h3>gsap.from() — Animate from initial state</h3>
+                <p>Starts from the values inside the configuration object and animates down to native CSS values.</p>
+                <pre>gsap.from(".box-2", { x: 400, opacity: 0, scale: 0.2, duration: 1.5 });</pre>
+                <button onclick="runCode(2)">Execute Command</button>
+            </div>
+
+            <div class="command-card">
+                <h3>gsap.fromTo() — Explicit boundaries</h3>
+                <p>Forces defined start values and runs down to exact end targets regardless of current state metrics.</p>
+                <pre>gsap.fromTo(".box-3", { x: 0, opacity: 0.2 }, { x: 400, opacity: 1, rotation: -180, duration: 1.5 });</pre>
+                <button onclick="runCode(3)">Execute Command</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>2. Sequencing & Timeline Controls</h2>
+            <div class="command-card">
+                <h3>gsap.timeline() — Multi-step sequences</h3>
+                <p>Chains animations chronologically without manual calculation chains.</p>
+                <pre>let tl = gsap.timeline();
+tl.to(".box-1", { x: 200, duration: 0.5 })
+  .to(".box-2", { x: 200, rotation: 45, duration: 0.5 }, "+=0.2") // relative shift
+  .to(".box-3", { x: 200, scale: 1.3, duration: 0.5 }, "<");     // align with start</pre>
+                <button onclick="runCode(4)">Execute Timeline</button>
+            </div>
+
+            <div class="command-card">
+                <h3>Runtime Instance Controls</h3>
+                <p>Interact with an ongoing timeline thread dynamically via memory handles.</p>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button class="btn-secondary" onclick="tlInstance.play()">.play()</button>
+                    <button class="btn-secondary" onclick="tlInstance.pause()">.pause()</button>
+                    <button class="btn-secondary" onclick="tlInstance.reverse()">.reverse()</button>
+                    <button class="btn-secondary" onclick="tlInstance.restart()">.restart()</button>
+                    <button class="btn-secondary" onclick="tlInstance.timeScale(2)">.timeScale(2x)</button>
+                    <button class="btn-secondary" onclick="tlInstance.timeScale(1)">.timeScale(1x)</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>3. Advanced Properties & Utility Arrays</h2>
+            <div class="command-card">
+                <h3>Advanced Arrays: Stagger and Loop Utility</h3>
+                <p>Spreads start intervals smoothly across all elements matching the selector block.</p>
+                <pre>gsap.to(".box", { 
+  x: 450, 
+  stagger: 0.15, 
+  repeat: 1, 
+  yoyo: true, 
+  ease: "back.out(1.7)" 
+});</pre>
+                <button onclick="runCode(5)">Execute Stagger</button>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 20px; max-height:100vh;">
+        <div class="panel">
+            <h2>Live Workspace Rendering Canvas</h2>
+            <div class="sandbox">
+                <div class="track"><div class="box box-1">to()</div></div>
+                <div class="track"><div class="box box-2">from()</div></div>
+                <div class="track"><div class="box box-3">fromTo</div></div>
+            </div>
+            <div style="margin-top:15px; display:flex; justify-content:flex-end;">
+                <button class="btn-secondary" onclick="resetSandbox()">Reset Canvas States</button>
+            </div>
+        </div>
+
+        <div class="panel" style="flex-grow: 1; display:flex; flex-direction:column;">
+            <h2>Interactive Command Console</h2>
+            <p style="font-size:0.85rem; color:#94a3b8; margin:0 0 10px 0;">Modify the code parameters below directly and click execute to evaluate live modifications against the viewport render.</p>
+            <textarea id="customConsole" style="width:100%; flex-grow:1; background:#090d16; border:1px solid var(--border); border-radius:6px; color:#34d399; font-family:monospace; padding:12px; resize:none; font-size:0.9rem;">// Write raw custom GSAP loops here and evaluate
+gsap.to(".box", {
+  x: "random(100, 400, 20)",
+  rotation: "random(-180, 180)",
+  duration: 1,
+  ease: "bounce.out"
+});</textarea>
+            <button style="margin-top:12px; width:100%;" onclick="runCustomConsole()">Evaluate Custom Script</button>
+        </div>
+    </div>
+
+    <script>
+        // Setup default execution states
+        gsap.registerPlugin(ScrollTrigger);
+        let tlInstance = gsap.timeline({ paused: true });
+        
+        // Populate reusable timeline thread
+        tlInstance.to(".box-1", { x: 350, duration: 1 })
+                  .to(".box-2", { x: 350, rotation: 180, duration: 1 })
+                  .to(".box-3", { x: 350, backgroundColor: "#6366f1", duration: 1 });
+
+        function resetSandbox() {
+            gsap.killTweensOf(".box");
+            gsap.set(".box", { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1, backgroundColor: "" });
+            // Reset text names back to default labels
+            document.querySelector('.box-1').style.backgroundColor = '';
+            document.querySelector('.box-2').style.backgroundColor = '';
+            document.querySelector('.box-3').style.backgroundColor = '';
+            tlInstance.pause().progress(0);
+        }
+
+        function runCode(id) {
+            resetSandbox();
+            switch(id) {
+                case 1:
+                    gsap.to(".box-1", { x: 400, rotation: 360, duration: 1.5, ease: "power2.out" });
+                    break;
+                case 2:
+                    gsap.from(".box-2", { x: 400, opacity: 0, scale: 0.2, duration: 1.5 });
+                    break;
+                case 3:
+                    gsap.fromTo(".box-3", { x: 0, opacity: 0.2 }, { x: 400, opacity: 1, rotation: -180, duration: 1.5 });
+                    break;
+                case 4:
+                    tlInstance.restart();
+                    break;
+                case 5:
+                    gsap.to(".box", { x: 450, stagger: 0.15, repeat: 1, yoyo: true, ease: "back.out(1.7)" });
+                    break;
+            }
+        }
+
+        function runCustomConsole() {
+            try {
+                const code = document.getElementById("customConsole").value;
+                // Direct evaluation context execution bound securely to current viewport
+                const runScript = new Function(code);
+                runScript();
+            } catch (err) {
+                alert("Syntax Evaluation Error: " + err.message);
+            }
+        }
+    </script>
+</body>
+</html>
