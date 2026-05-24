@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GSAP Advanced Concepts, Utilities & Ticker Laboratory</title>
+  
+  <!-- GSAP Engine & Plugins -->
+  <script src="gsap/dist/gsap.min.js"></script>
+  <script src="gsap/dist/ScrollTrigger.min.js"></script>
+  <script src="gsap/dist/Draggable.min.js"></script>
+  <script src="gsap/dist/TextPlugin.min.js"></script>
+  <script src="gsap/dist/EasePack.min.js"></script>
+  <script src="gsap/dist/MotionPathPlugin.min.js"></script>
+  <script src="gsap/dist/Flip.min.js"></script>
+  <script src="gsap/dist/CustomEase.min.js"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Outfit:wght@400;600;800&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-base: #090d16;
+      --bg-panel: rgba(30, 41, 59, 0.4);
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      
+      --brand: #a855f7;
+      --brand-glow: rgba(168, 85, 247, 0.35);
+      --accent: #3b82f6;
+      --accent-glow: rgba(59, 130, 246, 0.3);
+      --success: #10b981;
+      
+      --font-ui: 'Outfit', sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text);
+      font-family: var(--font-ui);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff 30%, #a855f7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    .badge-bar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .badge {
+      background: rgba(168, 85, 247, 0.1);
+      color: #d8b4fe;
+      border: 1px solid rgba(168, 85, 247, 0.2);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .lab-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 450px 1fr;
+      height: calc(100vh - 70px);
+      overflow: hidden;
+    }
+
+    .left-pane {
+      border-right: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.35);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .selector-block {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .selector-block label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    select {
+      width: 100%;
+      background: #1e293b;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 12px;
+      font-family: var(--font-ui);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .problem-description {
+      padding: 20px;
+      flex: 1;
+      overflow-y: auto;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .problem-description h2 {
+      font-size: 1.25rem;
+      color: #cbd5e1;
+    }
+
+    .problem-description p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .concepts-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      background: rgba(168, 85, 247, 0.1);
+      color: #d8b4fe;
+      border: 1px solid rgba(168, 85, 247, 0.2);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .editor-section {
+      padding: 20px;
+      background: rgba(15, 23, 42, 0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: 350px;
+    }
+
+    .editor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .editor-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    textarea.code-area {
+      width: 100%;
+      flex: 1;
+      background: #090d16;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: #c084fc;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      padding: 15px;
+      resize: none;
+      outline: none;
+      line-height: 1.6;
+    }
+
+    textarea.code-area:focus {
+      border-color: var(--brand);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      flex: 1;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--brand);
+      color: white;
+      box-shadow: 0 0 15px var(--brand-glow);
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: #334155;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: #475569;
+    }
+
+    .preview-pane {
+      background: #0b0f19;
+      display: flex;
+      flex-direction: column;
+      padding: 30px;
+      overflow-y: auto;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .canvas-title {
+      position: absolute;
+      top: 20px;
+      left: 30px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    #render-sandbox {
+      width: 100%;
+      max-width: 800px;
+      min-height: 400px;
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      padding: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .grid-guide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background-size: 40px 40px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    }
+
+    #sandbox-content {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>GSAP Advanced Concepts Laboratory</h1>
+    <div class="badge-bar">
+      <div class="badge">Scope: Engines & Utilities</div>
+      <div class="badge" style="background: rgba(168, 85, 247, 0.1); color: #d8b4fe; border-color: rgba(168, 85, 247, 0.2);">10 Core Tasks</div>
+    </div>
+  </header>
+
+  <div class="lab-grid">
+    <div class="left-pane">
+      <div class="selector-block">
+        <label for="ex-select">Select Practice Challenge</label>
+        <select id="ex-select" onchange="loadChallenge(this.value)">
+          <option value="ex-0">Ex 01: Global Defaults (gsap.defaults)</option>
+          <option value="ex-1">Ex 02: Responsive Media Query Bindings (matchMedia)</option>
+          <option value="ex-2">Ex 03: Coordinate Range Mapping (mapRange)</option>
+          <option value="ex-3">Ex 04: Slider Boundary Confinement (clamp)</option>
+          <option value="ex-4">Ex 05: Grid & Array Snapping (snap)</option>
+          <option value="ex-5">Ex 06: Circular Wrapping / Infinite Loops (wrap)</option>
+          <option value="ex-6">Ex 07: Array Distribution Utilities (distribute)</option>
+          <option value="ex-7">Ex 08: Animating Pseudo-Elements via CSS Variables</option>
+          <option value="ex-8">Ex 09: Canvas Ticker Render Loop (ticker)</option>
+          <option value="ex-9">Ex 10: Draggable Friction Deceleration (Inertia)</option>
+        </select>
+      </div>
+
+      <div class="problem-description">
+        <h2 id="prob-title">Challenge Title</h2>
+        <p id="prob-desc">Problem details go here...</p>
+        <div class="concepts-tags" id="prob-tags"></div>
+      </div>
+
+      <div class="editor-section">
+        <div class="editor-header">
+          <span class="editor-title">INTERACTIVE SCRIPT CONSOLE</span>
+          <span class="editor-title" style="color: var(--success); cursor: pointer;" onclick="loadSolution()">[VIEW SOLUTION]</span>
+        </div>
+        <textarea id="console-editor" class="code-area" spellcheck="false"></textarea>
+        <div class="btn-row">
+          <button class="btn-secondary" onclick="resetCanvas()">RESET TEMPLATE</button>
+          <button class="btn-primary" onclick="runScript()">RUN SCRIPT</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="preview-pane">
+      <span class="canvas-title">Interactive Preview Canvas</span>
+      <div id="render-sandbox">
+        <div class="grid-guide"></div>
+        <div id="sandbox-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Register plugins
+    gsap.registerPlugin(ScrollTrigger, Draggable, TextPlugin, MotionPathPlugin, EasePack, Flip, CustomEase);
+
+    // Sandbox listener registration tracker to prevent leakage on execution reruns
+    const activeListeners = [];
+    const originalWindowAdd = window.addEventListener;
+    const originalDocumentAdd = document.addEventListener;
+
+    window.addEventListener = function(type, listener, options) {
+      activeListeners.push({ target: window, type, listener, options });
+      originalWindowAdd.call(window, type, listener, options);
+    };
+    document.addEventListener = function(type, listener, options) {
+      activeListeners.push({ target: document, type, listener, options });
+      originalDocumentAdd.call(document, type, listener, options);
+    };
+
+    function cleanupSandboxListeners() {
+      activeListeners.forEach(({ target, type, listener, options }) => {
+        target.removeEventListener(type, listener, options);
+      });
+      activeListeners.length = 0;
+    }
+
+    // 10 Advanced Challenges Data
+    const challenges = [
+      // 1. Defaults
+      {
+        title: "Challenge 01: Global Configurations & Defaults",
+        desc: "Set a global default transition speed of 0.4s and ease curve ('power2.out') for all tweens. Then build a timeline utilizing default overrides of duration: 0.8s and 'back.out(1.5)' ease, and animate the cards.",
+        tags: ["gsap.defaults", "timeline defaults", "overrides"],
+        template: `<div style="display: flex; gap: 20px; background: #0f172a; padding: 25px; border-radius: 8px;">\n          <div id="card-title" style="width: 80px; height: 40px; background: #ea580c; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 11px; color: white;">Title</div>\n          <div id="card-text-gen" style="width: 80px; height: 40px; background: #3b82f6; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 11px; color: white;">Text</div>\n          <div id="card-rag" style="width: 80px; height: 40px; background: #10b981; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 11px; color: white;">Badge</div>\n        </div>`,
+        starter: `// 1. Establish project-wide defaults using gsap.defaults()\ngsap.defaults({\n  duration: 0.4,\n  ease: "power2.out"\n});\n\n// 2. Build timeline with local defaults overriding global configs\nconst tl = gsap.timeline({\n  defaults: {\n    duration: 0.8,\n    ease: "back.out(1.5)"\n  }\n});\n\n// 3. Chain card animations here\n`,
+        solution: `gsap.defaults({\n  duration: 0.4,\n  ease: "power2.out"\n});\n\nconst tl = gsap.timeline({\n  defaults: {\n    duration: 0.8,\n    ease: "back.out(1.5)"\n  }\n});\n\ntl.to("#card-title", { y: -20 })\n  .to("#card-text-gen", { x: 50 })\n  .to("#card-rag", {\n    y: 20,\n    duration: 0.2,\n    ease: "none"\n  });`
+      },
+      // 2. matchMedia
+      {
+        title: "Challenge 02: Responsive Media Query Animations",
+        desc: "Animate a sidebar panel #sidebar. On desktop sizes (min-width: 800px), slide in from the left. On mobile screens (max-width: 799px), slide up from the bottom. Make sure to clean up references in matchMedia.",
+        tags: ["gsap.matchMedia", "media query", "responsive cleanup"],
+        template: `<div style="position: relative; width: 100%; height: 260px; background: #0f172a; overflow: hidden; border-radius: 8px; border: 1px dashed #334155;">\n          <div id="sidebar" style="position: absolute; background: #1e293b; color: white; width: 120px; height: 100%; top: 0; left: -120px; padding: 15px; font-family: sans-serif; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; border-right: 2px solid #a855f7; z-index: 10;">SIDEBAR</div>\n          <div style="position: absolute; bottom: 15px; left: 15px; font-size: 11px; color: #64748b; font-family: sans-serif;">RESIZE WINDOW TO TEST VIEWPORTS</div>\n          <button id="toggle-sidebar" style="position: absolute; top: 15px; right: 15px; background: #a855f7; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; z-index: 20;">TOGGLE PANEL</button>\n        </div>`,
+        starter: `const mm = gsap.matchMedia();\nconst toggleBtn = document.getElementById("toggle-sidebar");\nlet showTween;\nlet isOpen = false;\n\n// Add (min-width: 800px) and (max-width: 799px) configurations\n`,
+        solution: `const mm = gsap.matchMedia();\nconst toggleBtn = document.getElementById("toggle-sidebar");\nlet showTween;\nlet isOpen = false;\n\nmm.add("(min-width: 800px)", () => {\n  gsap.set("#sidebar", { x: 0, y: 0, left: "-120px", width: "120px", height: "100%", top: 0, bottom: "auto" });\n  showTween = gsap.to("#sidebar", { left: 0, duration: 0.4, ease: "power2.out", paused: true });\n  return () => {\n    showTween.kill();\n    gsap.set("#sidebar", { clearProps: "all" });\n  };\n});\n\nmm.add("(max-width: 799px)", () => {\n  gsap.set("#sidebar", { left: 0, top: "auto", bottom: "-100px", width: "100%", height: "100px" });\n  showTween = gsap.to("#sidebar", { bottom: 0, duration: 0.4, ease: "power2.out", paused: true });\n  return () => {\n    showTween.kill();\n    gsap.set("#sidebar", { clearProps: "all" });\n  };\n});\n\ntoggleBtn.addEventListener("click", () => {\n  if (!isOpen) showTween.play();\n  else showTween.reverse();\n  isOpen = !isOpen;\n});`
+      },
+      // 3. mapRange
+      {
+        title: "Challenge 03: Coordinate Range Mapping",
+        desc: "Map the horizontal coordinates of the cursor across the track surface (0 to container width) to update the circle's stroke-width (2px to 24px) and opacity (0.2 to 1.0).",
+        tags: ["gsap.utils.mapRange", "mousemove", "strokeWidth", "opacity"],
+        template: `<div id="track-surface" style="width: 100%; height: 250px; background: #0f172a; display: flex; align-items: center; justify-content: center; position: relative; border-radius: 8px; cursor: crosshair;">\n          <span style="position: absolute; top: 15px; color: #64748b; font-size: 11px; font-family: sans-serif; pointer-events: none;">MOVE MOUSE ACROSS THIS AREA</span>\n          <svg width="200" height="200" style="pointer-events: none;">\n            <circle id="map-circle" cx="100" cy="100" r="60" fill="none" stroke="#a855f7" stroke-width="4" />\n          </svg>\n        </div>`,
+        starter: `const surface = document.getElementById("track-surface");\nconst circle = document.getElementById("map-circle");\n// Setup mouse listener to scale circle properties\n`,
+        solution: `const surface = document.getElementById("track-surface");\nconst circle = document.getElementById("map-circle");\n\nsurface.addEventListener("mousemove", (e) => {\n  const rect = surface.getBoundingClientRect();\n  const mouseX = e.clientX - rect.left;\n  \n  const strokeVal = gsap.utils.mapRange(0, rect.width, 2, 24, mouseX);\n  const opacityVal = gsap.utils.mapRange(0, rect.width, 0.2, 1.0, mouseX);\n  \n  gsap.to(circle, {\n    strokeWidth: strokeVal,\n    opacity: opacityVal,\n    duration: 0.1\n  });\n});\n\nsurface.addEventListener("mouseleave", () => {\n  gsap.to(circle, { strokeWidth: 4, opacity: 1, duration: 0.5 });\n});`
+      },
+      // 4. clamp
+      {
+        title: "Challenge 04: Slider Boundary Confinement",
+        desc: "Build progress drag-scrub positions. Calculate cursor movements relative to the slider track width, and clamp percentages between 0% and 100%.",
+        tags: ["gsap.utils.clamp", "mousemove", "slider dragging"],
+        template: `<div id="slider-box" style="width: 320px; background: #1e293b; padding: 25px; border-radius: 8px; color: white; user-select: none;">\n          <div id="slider-track" style="position: relative; width: 100%; height: 8px; background: #475569; border-radius: 4px; cursor: pointer;">\n            <div id="slider-handle" style="position: absolute; top: 50%; left: 0%; width: 20px; height: 20px; border-radius: 50%; background: #10b981; transform: translate(-50%, -50%);"></div>\n          </div>\n          <div style="margin-top: 20px; font-size: 11px; font-weight: bold; text-align: center; font-family: monospace;">CLAMPED VALUE: <span id="pos-val" style="color: #10b981; font-size: 14px;">0</span> %</div>\n        </div>`,
+        starter: `const track = document.getElementById("slider-track");\nconst handle = document.getElementById("slider-handle");\nconst valDisplay = document.getElementById("pos-val");\n// Setup drag tracking with gsap.utils.clamp\n`,
+        solution: `const track = document.getElementById("slider-track");\nconst handle = document.getElementById("slider-handle");\nconst valDisplay = document.getElementById("pos-val");\nlet isDragging = false;\n\ntrack.addEventListener("mousedown", (e) => {\n  isDragging = true;\n  updateSlider(e);\n});\n\nwindow.addEventListener("mouseup", () => isDragging = false);\nwindow.addEventListener("mousemove", (e) => { if (isDragging) updateSlider(e); });\n\nfunction updateSlider(e) {\n  const rect = track.getBoundingClientRect();\n  const rawPercent = ((e.clientX - rect.left) / rect.width) * 100;\n  const clamped = gsap.utils.clamp(0, 100, rawPercent);\n  \n  gsap.set(handle, { left: clamped + "%" });\n  valDisplay.textContent = Math.round(clamped);\n}`
+      },
+      // 5. snap
+      {
+        title: "Challenge 05: Grid & Array Snapping",
+        desc: "Make two nodes draggable: Lock pink NODE-A to a 40px grid slot, and snap blue NODE-B to the closest position index in the array: [40, 120, 200, 280].",
+        tags: ["Draggable", "snap()", "liveSnap"],
+        template: `<div id="snap-container" style="width: 400px; height: 220px; background: #0f172a; border: 1px dashed #334155; position: relative; border-radius: 8px; display: flex; align-items: center; justify-content: space-around; user-select: none;">\n          <div style="text-align: center; z-index: 5;">\n            <div id="drag-node-grid" style="width: 60px; height: 60px; background: #ec4899; border-radius: 8px; cursor: grab; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: white;">GRID</div>\n            <span style="font-size: 9px; color: #64748b; display: block; margin-top: 8px;">Snap (40px)</span>\n          </div>\n          <div style="text-align: center; z-index: 5;">\n            <div id="drag-node-array" style="width: 60px; height: 60px; background: #3b82f6; border-radius: 8px; cursor: grab; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: white;">ARRAY</div>\n            <span style="font-size: 9px; color: #64748b; display: block; margin-top: 8px;">Snap [40, 120, 200, 280]</span>\n          </div>\n        </div>`,
+        starter: `gsap.registerPlugin(Draggable);\n// Build Draggable instances on #drag-node-grid and #drag-node-array\n`,
+        solution: `gsap.registerPlugin(Draggable);\n\nDraggable.create("#drag-node-grid", {\n  type: "x,y",\n  bounds: "#snap-container",\n  liveSnap: {\n    x: gsap.utils.snap(40),\n    y: gsap.utils.snap(40)\n  }\n});\n\nconst targetPoints = [40, 120, 200, 280];\nDraggable.create("#drag-node-array", {\n  type: "x",\n  bounds: "#snap-container",\n  liveSnap: {\n    x: gsap.utils.snap(targetPoints)\n  }\n});`
+      },
+      // 6. wrap
+      {
+        title: "Challenge 06: Circular Wrapping / Infinite Loops",
+        desc: "Create an infinite scrolling banner moving to the left. When cards slide off the left edge (-120px), instantly wrap them to the right edge (230px) to continue scrolling.",
+        tags: ["gsap.utils.wrap", "modifiers", "infinite marquee"],
+        template: `<div class="marquee-track" style="position: relative; width: 300px; height: 100px; overflow: hidden; background: #0b0f19; border-radius: 8px; border: 1px solid #1e293b; display: flex; align-items: center;">\n          <div class="m-item" style="position: absolute; width: 80px; padding: 12px; background: #1e293b; color: white; border-radius: 6px; text-align: center; font-size: 11px; font-weight: bold; border: 1px solid #475569;">1</div>\n          <div class="m-item" style="position: absolute; width: 80px; padding: 12px; background: #1e293b; color: white; border-radius: 6px; text-align: center; font-size: 11px; font-weight: bold; border: 1px solid #475569; left: 110px;">2</div>\n          <div class="m-item" style="position: absolute; width: 80px; padding: 12px; background: #1e293b; color: white; border-radius: 6px; text-align: center; font-size: 11px; font-weight: bold; border: 1px solid #475569; left: 220px;">3</div>\n        </div>`,
+        starter: `const items = document.querySelectorAll(".m-item");\n// Translate and wrap items dynamically\n`,
+        solution: `const items = document.querySelectorAll(".m-item");\n\ngap = gsap.to(items, {\n  x: "-=600",\n  duration: 5,\n  ease: "none",\n  repeat: -1,\n  modifiers: {\n    x: gsap.utils.unitize(gsap.utils.wrap(-120, 230))\n  }\n});`
+      },
+      // 7. distribute
+      {
+        title: "Challenge 07: Array Distribution Utilities",
+        desc: "Distribute scale values from 1.5 at the edges to 0.2 at the center across a horizontal list of 7 dots to form a concave shape transition.",
+        tags: ["gsap.utils.distribute", "stagger", "elastic"],
+        template: `<div style="background: #0f172a; padding: 25px; border-radius: 8px; width: 340px;">\n          <ul id="dist-list" style="display: flex; justify-content: space-between; align-items: center; list-style: none; height: 50px; padding: 0 10px;">\n            <li style="width: 16px; height: 16px; background: #3b82f6; border-radius: 50%;"></li>\n            <li style="width: 16px; height: 16px; background: #3b82f6; border-radius: 50%;"></li>\n            <li style="width: 16px; height: 16px; background: #3b82f6; border-radius: 50%;"></li>\n            <li style="width: 16px; height: 16px; background: #3b82f6; border-radius: 50%;"></li>\n            <li style="width: 16px; height: 16px; background: #3b82f6; border-radius: 50%;"></li>\n            <li style="width: 16px; height: 16px; background: #3b82f6; border-radius: 50%;"></li>\n            <li style="width: 16px; height: 16px; background: #3b82f6; border-radius: 50%;"></li>\n          </ul>\n        </div>`,
+        starter: `const listItems = document.querySelectorAll("#dist-list li");\n// Distribute scales from edges (1.5) to center (0.2)\n`,
+        solution: `const listItems = document.querySelectorAll("#dist-list li");\n\ngsap.to(listItems, {\n  scale: gsap.utils.distribute({\n    values: [1.5, 0.2, 1.5],\n    ease: "power1.out",\n    from: "center"\n  }),\n  duration: 1.2,\n  ease: "elastic.out(1, 0.5)",\n  yoyo: true,\n  repeat: -1\n});`
+      },
+      // 8. Pseudo elements
+      {
+        title: "Challenge 08: Animating Pseudo-Elements via CSS Variables",
+        desc: "Animate a menu link underline. On mouse hover, scale the underline width to 100% and fade opacity to 1.0 by tweening the custom CSS variables '--under-width' and '--under-opacity'.",
+        tags: ["CSS Variables", "pseudo-element", "mouseenter"],
+        template: `<div style="background: #0b0f19; padding: 35px 50px; border-radius: 8px; text-align: center;">\n          <style>\n            .menu-link {\n              position: relative;\n              color: white;\n              text-decoration: none;\n              font-family: sans-serif;\n              font-weight: 800;\n              font-size: 20px;\n              letter-spacing: 1px;\n              --under-width: 0%;\n              --under-opacity: 0;\n            }\n            .menu-link::before {\n              content: "";\n              position: absolute;\n              bottom: -8px;\n              left: 0;\n              height: 3px;\n              background: #10b981;\n              width: var(--under-width);\n              opacity: var(--under-opacity);\n              box-shadow: 0 0 8px #10b981;\n            }\n          </style>\n          <a href="#" class="menu-link" id="target-link">DASHBOARD LINK</a>\n        </div>`,
+        starter: `const link = document.getElementById("target-link");\n// Bind hover triggers to scale underlines via variables\n`,
+        solution: `const link = document.getElementById("target-link");\n\nlink.addEventListener("mouseenter", () => {\n  gsap.to(link, {\n    "--under-width": "100%",\n    "--under-opacity": 1,\n    duration: 0.35,\n    ease: "power2.out"\n  });\n});\n\nlink.addEventListener("mouseleave", () => {\n  gsap.to(link, {\n    "--under-width": "0%",\n    "--under-opacity": 0,\n    duration: 0.3,\n    ease: "power2.in"\n  });\n});`
+      },
+      // 9. ticker
+      {
+        title: "Challenge 09: High-Performance Canvas Rendering (gsap.ticker)",
+        desc: "Tween coordinate properties of a plain JavaScript object representing a circle particle. In sync, bind a canvas render loop callback to the gsap.ticker callback tree.",
+        tags: ["gsap.ticker.add", "canvas render", "ticker cleanup"],
+        template: `<div style="text-align: center;">\n          <canvas id="render-canvas" width="360" height="180" style="background: #090d16; border-radius: 8px; border: 1px solid #1e293b; display: block; margin: 0 auto;"></canvas>\n        </div>`,
+        starter: `const canvas = document.getElementById("render-canvas");\nconst ctx = canvas.getContext("2d");\nconst particle = { x: 50, y: 90, radius: 10 };\n\n// Tween particle properties, then register loop on ticker\n`,
+        solution: `const canvas = document.getElementById("render-canvas");\nconst ctx = canvas.getContext("2d");\nconst particle = { x: 50, y: 90, radius: 10 };\n\ngsap.to(particle, {\n  x: 310,\n  radius: 25,\n  duration: 2,\n  repeat: -1,\n  yoyo: true,\n  ease: "sine.inOut"\n});\n\ngsap.ticker.add(drawScene);\n\nfunction drawScene() {\n  ctx.clearRect(0, 0, canvas.width, canvas.height);\n  ctx.beginPath();\n  ctx.arc(particle.x, particle.y, particle.radius, 0, 2 * Math.PI);\n  ctx.fillStyle = "#c084fc";\n  ctx.fill();\n}\n\nwindow.destroyCanvasScene = function() {\n  gsap.ticker.remove(drawScene);\n};`
+      },
+      // 10. inertia throw
+      {
+        title: "Challenge 10: Simulating Draggable Friction Deceleration (Inertia)",
+        desc: "Construct an inertia decay slide. Track velocities on drag release and slide the square to its landing offset with a power2.out ease curve.",
+        tags: ["Draggable", "inertia simulation", "modifiers clamp", "velocity"],
+        template: `<div id="drag-container" style="width: 380px; height: 100px; background: #0f172a; position: relative; border-radius: 8px; border: 1px solid #1e293b; display: flex; align-items: center; user-select: none;">\n          <div id="throw-node" style="position: absolute; width: 50px; height: 50px; background: #ea580c; left: 15px; border-radius: 6px; cursor: grab; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: white;">DRAG</div>\n          <span style="position: absolute; right: 15px; font-size: 10px; color: #64748b; font-family: monospace;">THROW ME</span>\n        </div>`,
+        starter: `gsap.registerPlugin(Draggable);\nlet lastX = 0;\nlet velocity = 0;\n\n// Build inertia slides inside onDragEnd\n`,
+        solution: `gsap.registerPlugin(Draggable);\nlet lastX = 0;\nlet velocity = 0;\n\nDraggable.create("#throw-node", {\n  type: "x",\n  bounds: "#drag-container",\n  onDragStart: function() {\n    gsap.killTweensOf(this.target);\n    lastX = this.x;\n  },\n  onDrag: function() {\n    velocity = this.x - lastX;\n    lastX = this.x;\n  },\n  onDragEnd: function() {\n    const decayDistance = velocity * 15;\n    gsap.to(this.target, {\n      x: \`+=\${decayDistance}\`,\n      duration: 0.8,\n      ease: "power2.out",\n      modifiers: {\n        x: gsap.utils.unitize(gsap.utils.clamp(0, 300))\n      }\n    });\n  }\n});`
+      }
+    ];
+
+    let activeChallengeIndex = 0;
+    const editor = document.getElementById("console-editor");
+
+    // Load initial challenge
+    loadChallenge("ex-0");
+
+    function loadChallenge(id) {
+      const index = parseInt(id.replace("ex-", ""));
+      activeChallengeIndex = index;
+      
+      const ch = challenges[index];
+      
+      document.getElementById("prob-title").textContent = ch.title;
+      document.getElementById("prob-desc").textContent = ch.desc;
+      
+      const tagsContainer = document.getElementById("prob-tags");
+      tagsContainer.innerHTML = "";
+      ch.tags.forEach(t => {
+        const span = document.createElement("span");
+        span.className = "tag";
+        span.textContent = t;
+        tagsContainer.appendChild(span);
+      });
+      
+      editor.value = ch.starter;
+      document.getElementById("sandbox-content").innerHTML = ch.template;
+      
+      // Cleanup previous frame tasks/listeners
+      if (typeof window.destroyCanvasScene === "function") {
+        try { window.destroyCanvasScene(); } catch(e) {}
+        window.destroyCanvasScene = null;
+      }
+      cleanupSandboxListeners();
+      gsap.killTweensOf("*");
+    }
+
+    function loadSolution() {
+      const ch = challenges[activeChallengeIndex];
+      editor.value = ch.solution;
+    }
+
+    function resetCanvas() {
+      const ch = challenges[activeChallengeIndex];
+      document.getElementById("sandbox-content").innerHTML = ch.template;
+      
+      if (typeof window.destroyCanvasScene === "function") {
+        try { window.destroyCanvasScene(); } catch(e) {}
+        window.destroyCanvasScene = null;
+      }
+      cleanupSandboxListeners();
+      gsap.killTweensOf("*");
+      editor.value = ch.starter;
+    }
+
+    function runScript() {
+      try {
+        // Kill existing sandbox tweens
+        gsap.killTweensOf("#sandbox-content *");
+        
+        const code = editor.value;
+        const executeCode = new Function(code);
+        executeCode();
+      } catch (err) {
+        alert("Execution Error: " + err.message);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GSAP Hybrid HTML + SVG Practice Laboratory</title>
+  
+  <!-- GSAP Engine & Plugins -->
+  <script src="gsap/dist/gsap.min.js"></script>
+  <script src="gsap/dist/ScrollTrigger.min.js"></script>
+  <script src="gsap/dist/Draggable.min.js"></script>
+  <script src="gsap/dist/TextPlugin.min.js"></script>
+  <script src="gsap/dist/EasePack.min.js"></script>
+  <script src="gsap/dist/MotionPathPlugin.min.js"></script>
+  <script src="gsap/dist/Flip.min.js"></script>
+  <script src="gsap/dist/CustomEase.min.js"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Outfit:wght@400;600;800&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-base: #090d16;
+      --bg-panel: rgba(30, 41, 59, 0.4);
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      
+      --brand: #ea580c;
+      --brand-glow: rgba(234, 88, 12, 0.35);
+      --accent: #3b82f6;
+      --accent-glow: rgba(59, 130, 246, 0.3);
+      --success: #10b981;
+      
+      --font-ui: 'Outfit', sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text);
+      font-family: var(--font-ui);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff 30%, #3b82f6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    .badge-bar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .badge {
+      background: rgba(59, 130, 246, 0.1);
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .lab-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 450px 1fr;
+      height: calc(100vh - 70px);
+      overflow: hidden;
+    }
+
+    .left-pane {
+      border-right: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.35);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .selector-block {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .selector-block label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    select {
+      width: 100%;
+      background: #1e293b;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 12px;
+      font-family: var(--font-ui);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .problem-description {
+      padding: 20px;
+      flex: 1;
+      overflow-y: auto;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .problem-description h2 {
+      font-size: 1.25rem;
+      color: #cbd5e1;
+    }
+
+    .problem-description p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .concepts-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      background: rgba(59, 130, 246, 0.1);
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .editor-section {
+      padding: 20px;
+      background: rgba(15, 23, 42, 0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: 350px;
+    }
+
+    .editor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .editor-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    textarea.code-area {
+      width: 100%;
+      flex: 1;
+      background: #090d16;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: #60a5fa;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      padding: 15px;
+      resize: none;
+      outline: none;
+      line-height: 1.6;
+    }
+
+    textarea.code-area:focus {
+      border-color: #3b82f6;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      flex: 1;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: #334155;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: #475569;
+    }
+
+    .preview-pane {
+      background: #0b0f19;
+      display: flex;
+      flex-direction: column;
+      padding: 30px;
+      overflow-y: auto;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .canvas-title {
+      position: absolute;
+      top: 20px;
+      left: 30px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    #render-sandbox {
+      width: 100%;
+      max-width: 800px;
+      min-height: 400px;
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      padding: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .grid-guide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background-size: 40px 40px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    }
+
+    #sandbox-content {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>GSAP Hybrid HTML + SVG Laboratory</h1>
+    <div class="badge-bar">
+      <div class="badge">Scope: Web Integrations</div>
+      <div class="badge" style="background: rgba(59, 130, 246, 0.1); color: var(--accent); border-color: rgba(59, 130, 246, 0.2);">10 Layouts</div>
+    </div>
+  </header>
+
+  <div class="lab-grid">
+    <div class="left-pane">
+      <div class="selector-block">
+        <label for="ex-select">Select Practice Challenge</label>
+        <select id="ex-select" onchange="loadChallenge(this.value)">
+          <option value="ex-0">Ex 01: Hero SVG Media Mask Reveal</option>
+          <option value="ex-1">Ex 02: SVG MotionPath Tooltip Follower</option>
+          <option value="ex-2">Ex 03: Scroll-Triggered Chart Annotation Cards</option>
+          <option value="ex-3">Ex 04: Burger Menu Fullscreen Radial Navigation</option>
+          <option value="ex-4">Ex 05: E-Commerce Product Swatch Customizer</option>
+          <option value="ex-5">Ex 06: Draggable Blueprint Sidebar Sync</option>
+          <option value="ex-6">Ex 07: Liquid Wave Footer & Spawning Bubbles</option>
+          <option value="ex-7">Ex 08: Parallax Silhouette Landscape</option>
+          <option value="ex-8">Ex 09: Thermostat dial & Input Form Sync</option>
+          <option value="ex-9">Ex 10: Magnetized Grid (Mouse tracking matrix)</option>
+        </select>
+      </div>
+
+      <div class="problem-description">
+        <h2 id="prob-title">Challenge Title</h2>
+        <p id="prob-desc">Problem details go here...</p>
+        <div class="concepts-tags" id="prob-tags"></div>
+      </div>
+
+      <div class="editor-section">
+        <div class="editor-header">
+          <span class="editor-title">INTERACTIVE SCRIPT CONSOLE</span>
+          <span class="editor-title" style="color: var(--success); cursor: pointer;" onclick="loadSolution()">[VIEW SOLUTION]</span>
+        </div>
+        <textarea id="console-editor" class="code-area" spellcheck="false"></textarea>
+        <div class="btn-row">
+          <button class="btn-secondary" onclick="resetCanvas()">RESET TEMPLATE</button>
+          <button class="btn-primary" onclick="runScript()">RUN SCRIPT</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="preview-pane">
+      <span class="canvas-title">Hybrid Viewport Canvas</span>
+      <div id="render-sandbox">
+        <div class="grid-guide"></div>
+        <div id="sandbox-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 10 Hybrid Challenges Data
+    const challenges = [
+      // 1. Hero mask reveal
+      {
+        title: "Challenge 01: Hero SVG Media Mask Reveal",
+        desc: "Animate the circular clipPath radius definition dynamically to scale open, simulating a magnifying lens viewport reveal on mouse scroll.",
+        tags: ["clip-path", "attr: {}", "circle r", "reveal mask"],
+        template: `<div style="position: relative; width: 100%; min-height: 250px; background: #0b0f19; overflow: hidden; display: flex; align-items: center; justify-content: center;">\n          <div id="video-mock" style="width: 250px; height: 180px; background: linear-gradient(45deg, #ef4444, #3b82f6); border-radius: 8px; clip-path: url(#reveal-clip); display: flex; align-items: center; justify-content: center; font-weight: bold; color: white;">MEDIA BACKGROUND</div>\n          <svg width="0" height="0">\n            <clipPath id="reveal-clip" clipPathUnits="objectBoundingBox">\n              <circle id="mask-circle" cx="0.5" cy="0.5" r="0.1" />\n            </clipPath>\n          </svg>\n        </div>`,
+        starter: `// Animate circular clip mask '#mask-circle' radius to 0.85`,
+        solution: `gsap.to("#mask-circle", {\n  attr: { r: 0.85 },\n  duration: 2.0,\n  ease: "power2.inOut",\n  yoyo: true,\n  repeat: 1\n});`
+      },
+      // 2. ship follower
+      {
+        title: "Challenge 02: SVG MotionPath Tooltip Follower",
+        desc: "Animate the ship node along the shipping lane path, and update an absolute-positioned HTML tooltip div coordinates to sit directly above the ship.",
+        tags: ["MotionPathPlugin", "getCTM() matrix", "onUpdate follower"],
+        template: `<div style="position: relative; width: 450px; height: 200px; background: #0f172a; border-radius: 8px;">\n          <svg width="100%" height="100%" viewBox="0 0 450 200">\n            <path id="shipping-lane" d="M 50,150 C 150,50 300,50 400,150" fill="none" stroke="#334155" stroke-dasharray="6 6" />\n            <g id="ship-node"><circle r="12" fill="#3b82f6" /></g>\n          </svg>\n          <div id="ship-tooltip" style="position: absolute; background: white; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 10px; color: black; font-weight: bold; transform: translate(-50%, -120%); pointer-events: none;">VESSEL A01</div>\n        </div>`,
+        starter: `// Animate the ship along #shipping-lane, map coordinates inside onUpdate to position #ship-tooltip`,
+        solution: `gsap.to("#ship-node", {\n  duration: 4,\n  repeat: -1,\n  yoyo: true,\n  motionPath: {\n    path: "#shipping-lane",\n    align: "#shipping-lane"\n  },\n  onUpdate: function() {\n    const matrix = document.getElementById("ship-node").getCTM();\n    gsap.set("#ship-tooltip", {\n      left: matrix.e,\n      top: matrix.f\n    });\n  }\n});`
+      },
+      // 3. chart annotation cards
+      {
+        title: "Challenge 03: Chart Annotation Cards",
+        desc: "Draw the green line graph path on scroll, and highlight corresponding HTML detail cards sequentially as they enter.",
+        tags: ["line chart", "annotation cards", "stagger timeline", "strokeDashoffset"],
+        template: `<div style="display: flex; gap: 20px; width: 100%; max-width: 500px; background: #0f172a; padding: 20px; border-radius: 8px;">\n          <svg width="250" height="150" viewBox="0 0 250 150" style="background: #1e293b; border-radius: 4px;">\n            <path id="graph-path" d="M 20,130 L 80,100 L 140,50 L 230,20" fill="none" stroke="#10b981" stroke-width="4" />\n          </svg>\n          <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">\n            <div class="ann-card" style="background: #1e293b; padding: 10px; border-radius: 4px; font-size: 10px; opacity: 0.3;">Q1: Launch</div>\n            <div class="ann-card" style="background: #1e293b; padding: 10px; border-radius: 4px; font-size: 10px; opacity: 0.3;">Q2: Growth</div>\n            <div class="ann-card" style="background: #1e293b; padding: 10px; border-radius: 4px; font-size: 10px; opacity: 0.3;">Q3: Scale</div>\n          </div>\n        </div>`,
+        starter: `const path = document.getElementById("graph-path");\nconst len = path.getTotalLength();\n// Set starting dash offsets and sequence chart line draw with card highlights`,
+        solution: `const path = document.getElementById("graph-path");\nconst len = path.getTotalLength();\ngsap.set(path, { strokeDasharray: len, strokeDashoffset: len });\n\nconst tl = gsap.timeline();\ntl.to(path, { strokeDashoffset: 0, duration: 2.0, ease: "none" })\n  .to(".ann-card", { opacity: 1, stagger: 0.5, duration: 0.3, scale: 1.05 }, "-=1.8");`
+      },
+      // 4. radial clip nav
+      {
+        title: "Challenge 04: Burger Menu Fullscreen Radial Navigation",
+        desc: "Reveal a fullscreen menu navigation panel using a radial clip mask expanding from the trigger button coordinates.",
+        tags: ["fullscreen menu", "radial reveal", "clipPath", "burger morph"],
+        template: `<div style="position: relative; width: 400px; height: 250px; background: #0f172a; overflow: hidden; border-radius: 8px;">\n          <div id="nav-overlay" style="position: absolute; width: 100%; height: 100%; background: #ea580c; z-index: 5; display: flex; align-items: center; justify-content: center; clip-path: url(#radial-nav-clip); pointer-events: none; color: white; font-weight: bold; font-family: sans-serif;">NAVIGATION PAGE</div>\n          <button id="menu-burger" style="position: absolute; right: 15px; top: 15px; z-index: 10; width: 40px; height: 40px; background: white; border-radius: 50%; color: black; display: flex; align-items: center; justify-content: center; font-weight: bold; font-family: sans-serif;">MENU</button>\n          <svg width="0" height="0">\n            <clipPath id="radial-nav-clip" clipPathUnits="userSpaceOnUse">\n              <circle id="nav-mask-circle" cx="360" cy="35" r="0" />\n            </clipPath>\n          </svg>\n        </div>`,
+        starter: `// Click trigger to scale circle mask '#nav-mask-circle' radius to 500px`,
+        solution: `const btn = document.getElementById("menu-burger");\nlet active = false;\nbtn.addEventListener("click", () => {\n  gsap.to("#nav-mask-circle", {\n    attr: { r: active ? 0 : 500 },\n    duration: 0.6,\n    ease: "power2.inOut"\n  });\n  active = !active;\n});`
+      },
+      // 5. swatches customizer
+      {
+        title: "Challenge 05: E-Commerce Product Swatch Customizer",
+        desc: "Customizing shoe panel fills (Sole, Base, Swoosh) in the SVG when color swatches are clicked.",
+        tags: ["swatches", "ecommerce Customizer", "elastic bounce"],
+        template: `<div style="width: 320px; background: #0f172a; padding: 20px; border-radius: 12px; font-family: sans-serif; color: white;">
+          <svg id="product-shoe" width="100%" height="150" viewBox="0 0 200 100">
+            <ellipse cx="100" cy="85" rx="70" ry="10" fill="#090d16" opacity="0.5"/>
+            <path class="shoe-panel sole" d="M30,80 Q100,85 170,80 L160,70 Q100,75 40,70 Z" fill="#e2e8f0" />
+            <path class="shoe-panel base" d="M40,70 Q100,75 160,70 C160,50 140,20 100,30 C90,40 50,40 40,70 Z" fill="#cbd5e1" />
+            <path class="shoe-panel swoosh" d="M60,65 Q100,45 140,55 Q100,60 60,65 Z" fill="#64748b" />
+          </svg>
+          <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
+            <span>COLORWAYS:</span>
+            <div class="swatches" style="display: flex; gap: 8px;">
+              <button class="sw-btn" data-s="#ef4444" data-b="#fee2e2" data-sw="#991b1b" style="background: #ef4444; width: 20px; height: 20px; border-radius: 50%; border: none; cursor: pointer;"></button>
+              <button class="sw-btn" data-s="#10b981" data-b="#d1fae5" data-sw="#065f46" style="background: #10b981; width: 20px; height: 20px; border-radius: 50%; border: none; cursor: pointer;"></button>
+              <button class="sw-btn" data-s="#3b82f6" data-b="#dbeafe" data-sw="#1e40af" style="background: #3b82f6; width: 20px; height: 20px; border-radius: 50%; border: none; cursor: pointer;"></button>
+            </div>
+          </div>
+        </div>`,
+        starter: `// Listen to clicks on swatches and animate panel fills`,
+        solution: `const buttons = document.querySelectorAll(".sw-btn");\nbuttons.forEach(btn => {\n  btn.addEventListener("click", () => {\n    const sole = btn.getAttribute("data-s");\n    const base = btn.getAttribute("data-b");\n    const swoosh = btn.getAttribute("data-sw");\n    \n    const tl = gsap.timeline();\n    tl.to(".shoe-panel", { scale: 0.96, transformOrigin: "50% 50%", duration: 0.15, yoyo: true, repeat: 1 })\n      .to(".sole", { fill: sole, duration: 0.3 }, 0.15)\n      .to(".base", { fill: base, duration: 0.3 }, 0.15)\n      .to(".swoosh", { fill: swoosh, duration: 0.3 }, 0.15)\n      .to(".shoe-panel", { scale: 1.0, transformOrigin: "50% 50%", ease: "elastic.out(1.2, 0.4)", duration: 0.8 }, 0.3);\n  });\n});`
+      },
+      // 6. Blueprint zoom
+      {
+        title: "Challenge 06: Draggable Blueprint Sidebar Sync",
+        desc: "Double-click ROOM A or ROOM B to zoom camera offsets and slide metadata content sidebar cards.",
+        tags: ["viewBox animation", "zoom", "sidebar update"],
+        template: `<div style="display: flex; gap: 20px; width: 500px; height: 250px; background: #0b0f19; padding: 15px; border-radius: 12px; font-family: sans-serif; color: white;">\n          <div id="blueprint-window" style="flex: 2; border: 1px dashed #334155; border-radius: 8px; overflow: hidden; position: relative;">\n            <div id="panning-canvas" style="width: 500px; height: 350px;">\n              <svg width="100%" height="100%" viewBox="0 0 500 350">\n                <rect id="room-a" x="30" y="30" width="150" height="120" fill="#1e293b" stroke="#475569" stroke-width="2" style="cursor: pointer;" />\n                <text x="105" y="90" fill="white" text-anchor="middle" style="pointer-events: none;">ROOM A</text>\n                <rect id="room-b" x="240" y="100" width="200" height="150" fill="#1e293b" stroke="#475569" stroke-width="2" style="cursor: pointer;" />\n                <text x="340" y="180" fill="white" text-anchor="middle" style="pointer-events: none;">ROOM B</text>\n              </svg>\n            </div>\n          </div>\n          <div id="desc-sidebar" style="flex: 1; background: #1e293b; border-radius: 8px; padding: 10px; font-size: 11px; display: flex; flex-direction: column; justify-content: center;">\n            <h3 id="room-title" style="margin-bottom: 5px;">ROOMS</h3>\n            <p id="room-detail" style="color: #94a3b8;">Double-click a room node.</p>\n          </div>\n        </div>`,
+        starter: `const roomDetails = {\n  "room-a": { name: "Conference Room A", details: "Capacity: 12" },\n  "room-b": { name: "Innovation Lab B", details: "Capacity: 30" }\n};\n// Add double click listeners to zoom and update details`,
+        solution: `const roomDetails = {\n  "room-a": { name: "Conference Room A", details: "Capacity: 12" },\n  "room-b": { name: "Innovation Lab B", details: "Capacity: 30" }\n};\n\ndocument.querySelectorAll("#panning-canvas rect").forEach(room => {\n  room.addEventListener("dblclick", () => {\n    const details = roomDetails[room.id];\n    gsap.fromTo(room, { fill: "#3b82f6" }, { fill: "#1e293b", duration: 1.0 });\n    document.getElementById("room-title").textContent = details.name;\n    document.getElementById("room-detail").textContent = details.details;\n  });\n});`
+      },
+      // 7. liquid wave footer
+      {
+        title: "Challenge 07: Liquid Wave Footer & Spawning Bubbles",
+        desc: "Recalculate wave height paths during hover states and spawn random floating circle bubble nodes.",
+        tags: ["liquid wave", "bubble emitter", "path morphing", "mouseenter"],
+        template: `<div style="position: relative; width: 400px; height: 200px; background: #0b0f19; overflow: hidden; border-radius: 8px;">\n          <a href="#" id="call-link" style="position: absolute; top: 15px; left: 50%; transform: translateX(-50%); color: white; text-decoration: none; font-weight: bold; z-index: 10; font-family: sans-serif;">HOVER ME</a>\n          <svg id="wave-canvas" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 120px;" viewBox="0 0 600 120" preserveAspectRatio="none">\n            <path id="f-wave" d="M 0,80 Q 150,60 300,80 T 600,80 L 600,120 L 0,120 Z" fill="#3b82f6" />\n          </svg>\n        </div>`,
+        starter: `const link = document.getElementById("call-link");\nconst canvas = document.getElementById("wave-canvas");\n// Adjust wave height on mouseenter/mouseleave and spawn bubble nodes`,
+        solution: `const link = document.getElementById("call-link");\nconst canvas = document.getElementById("wave-canvas");\n\nlink.addEventListener("mouseenter", () => {\n  gsap.to("#f-wave", {\n    attr: { d: "M 0,40 Q 150,10 300,40 T 600,40 L 600,120 L 0,120 Z" },\n    duration: 0.5\n  });\n  for(let i=0; i<3; i++) {\n    const b = document.createElementNS("http://www.w3.org/2000/svg", "circle");\n    b.setAttribute("cx", Math.random()*400);\n    b.setAttribute("cy", "120");\n    b.setAttribute("r", Math.random()*5+2);\n    b.setAttribute("fill", "#60a5fa");\n    canvas.appendChild(b);\n    gsap.to(b, { y: -140, opacity: 0, duration: 1.5, onComplete: () => b.remove() });\n  }\n});\nlink.addEventListener("mouseleave", () => {\n  gsap.to("#f-wave", {\n    attr: { d: "M 0,80 Q 150,60 300,80 T 600,80 L 600,120 L 0,120 Z" },\n    duration: 0.5\n  });\n});`
+      },
+      // 8. Parallax silhouettes
+      {
+        title: "Challenge 08: Parallax Silhouette Landscape",
+        desc: "Animate layered landscape elements (background mountain silhouettes vs. foreground trees) scrolling at separate relative speeds.",
+        tags: ["parallax layers", "depth offset", "yPercent scroll"],
+        template: `<div style="position: relative; width: 400px; height: 250px; background: #0f172a; overflow: hidden; border-radius: 8px;">\n          <polygon class="p-layer" id="mountain-bg" points="0,250 150,120 300,200 400,250" fill="#1e293b" />\n          <h1 id="p-text" style="position: absolute; top: 40%; left: 50%; transform: translateX(-50%); color: white; font-size: 32px; font-family: Impact; pointer-events: none;">PEAK</h1>\n          <rect class="p-layer" id="forest-fg" x="0" y="190" width="400" height="60" fill="#020617" />\n        </div>`,
+        starter: `// Simulate parallax shifts on the landscape layers`,
+        solution: `gsap.to("#mountain-bg", { y: 30, duration: 2, repeat: -1, yoyo: true, ease: "sine.inOut" });\ngsap.to("#p-text", { y: -20, duration: 2, repeat: -1, yoyo: true, ease: "sine.inOut" }, 0);`
+      },
+      // 9. Thermostat dial
+      {
+        title: "Challenge 09: Thermostat dial & Input Form Sync",
+        desc: "Drag the pointer handle along the gauge path, converting coordinates to degree angles and updating the HTML input display in sync.",
+        tags: ["Draggable", "thermostat sync", "polar coordinates", "onDrag"],
+        template: `<div style="width: 250px; background: #0f172a; padding: 20px; border-radius: 12px; font-family: monospace; color: white; text-align: center;">\n          <div style="position: relative; width: 100px; height: 100px; margin: 0 auto 15px auto;">\n            <svg width="100" height="100" viewBox="0 0 100 100">\n              <circle cx="50" cy="50" r="40" stroke="#1e293b" stroke-width="6" fill="none" />\n              <circle id="act-stroke" cx="50" cy="50" r="40" stroke="#10b981" stroke-width="6" stroke-linecap="round" fill="none" stroke-dasharray="251" stroke-dashoffset="251" transform="rotate(-90 50 50)" />\n              <g id="dial-ptr" style="cursor: grab;"><circle cx="50" cy="10" r="6" fill="#ef4444" /></g>\n            </svg>\n          </div>\n          <div>VALUE: <input type="number" id="dial-val" value="0" style="background: #1e293b; color: white; border: 1px solid #475569; width: 50px; text-align: center; border-radius: 4px;" /> %</div>\n        </div>`,
+        starter: `// Build Draggable rotation knob and update active stroke offset and HTML input values`,
+        solution: `gsap.registerPlugin(Draggable);\nconst stroke = document.getElementById("act-stroke");\nconst input = document.getElementById("dial-val");\n\nDraggable.create("#dial-ptr", {\n  type: "rotation",\n  bounds: { minRotation: 0, maxRotation: 360 },\n  onDrag: function() {\n    let angle = this.rotation;\n    if (angle < 0) angle = 360 + angle;\n    const percent = Math.round((angle / 360) * 100);\n    input.value = percent;\n    stroke.style.strokeDashoffset = 251 - (angle / 360) * 251;\n  }\n});`
+      },
+      // 10. Magnetized Grid
+      {
+        title: "Challenge 10: Magnetized Grid",
+        desc: "Move your mouse across the grid. Animate all crosshair lines to rotate dynamically facing the cursor position coordinates.",
+        tags: ["magnet grid", "Math.atan2", "mousemove tracking", "quickTo"],
+        template: `<div id="magnet-surface" style="width: 100%; height: 100%; min-height: 250px; background: #090d16; display: grid; grid-template-columns: repeat(4, 1fr); align-items: center; justify-items: center; border-radius: 8px;">\n          <div class="crosshair" style="width: 30px; height: 30px; border-bottom: 2px solid #334155; transform-origin: 50% 100%;"></div>\n          <div class="crosshair" style="width: 30px; height: 30px; border-bottom: 2px solid #334155; transform-origin: 50% 100%;"></div>\n          <div class="crosshair" style="width: 30px; height: 30px; border-bottom: 2px solid #334155; transform-origin: 50% 100%;"></div>\n          <div class="crosshair" style="width: 30px; height: 30px; border-bottom: 2px solid #334155; transform-origin: 50% 100%;"></div>\n          <div class="crosshair" style="width: 30px; height: 30px; border-bottom: 2px solid #334155; transform-origin: 50% 100%;"></div>\n          <div class="crosshair" style="width: 30px; height: 30px; border-bottom: 2px solid #334155; transform-origin: 50% 100%;"></div>\n          <div class="crosshair" style="width: 30px; height: 30px; border-bottom: 2px solid #334155; transform-origin: 50% 100%;"></div>\n          <div class="crosshair" style="width: 30px; height: 30px; border-bottom: 2px solid #334155; transform-origin: 50% 100%;"></div>\n        </div>`,
+        starter: `const surface = document.getElementById("magnet-surface");\nconst crosshairs = document.querySelectorAll(".crosshair");\n// Setup mouse tracking and calculate rotation degrees`,
+        solution: `const surface = document.getElementById("magnet-surface");\nconst crosshairs = document.querySelectorAll(".crosshair");\n\nsurface.addEventListener("mousemove", (e) => {\n  const rect = surface.getBoundingClientRect();\n  const mouseX = e.clientX - rect.left;\n  const mouseY = e.clientY - rect.top;\n  \n  crosshairs.forEach(c => {\n    const cRect = c.getBoundingClientRect();\n    const cX = cRect.left + cRect.width/2 - rect.left;\n    const cY = cRect.top + cRect.height/2 - rect.top;\n    \n    const angle = Math.atan2(mouseY - cY, mouseX - cX) * (180 / Math.PI);\n    gsap.to(c, { rotation: angle - 90, duration: 0.2 });\n  });\n});\n\nsurface.addEventListener("mouseleave", () => {\n  gsap.to(crosshairs, { rotation: 0, duration: 0.5 });\n});`
+      }
+    ];
+
+    let activeChallengeIndex = 0;
+    const editor = document.getElementById("console-editor");
+
+    // Load initial challenge
+    loadChallenge("ex-0");
+
+    function loadChallenge(id) {
+      const index = parseInt(id.replace("ex-", ""));
+      activeChallengeIndex = index;
+      
+      const ch = challenges[index];
+      
+      document.getElementById("prob-title").textContent = ch.title;
+      document.getElementById("prob-desc").textContent = ch.desc;
+      
+      const tagsContainer = document.getElementById("prob-tags");
+      tagsContainer.innerHTML = "";
+      ch.tags.forEach(t => {
+        const span = document.createElement("span");
+        span.className = "tag";
+        span.textContent = t;
+        tagsContainer.appendChild(span);
+      });
+      
+      editor.value = ch.starter;
+      document.getElementById("sandbox-content").innerHTML = ch.template;
+      
+      gsap.killTweensOf("*");
+    }
+
+    function loadSolution() {
+      const ch = challenges[activeChallengeIndex];
+      editor.value = ch.solution;
+    }
+
+    function resetCanvas() {
+      const ch = challenges[activeChallengeIndex];
+      document.getElementById("sandbox-content").innerHTML = ch.template;
+      gsap.killTweensOf("*");
+      editor.value = ch.starter;
+    }
+
+    function runScript() {
+      try {
+        gsap.killTweensOf("#sandbox-content *");
+        const code = editor.value;
+        const executeCode = new Function(code);
+        executeCode();
+      } catch (err) {
+        alert("Execution Error: " + err.message);
+      }
+    }
+  </script>
+</body>
+</html>
