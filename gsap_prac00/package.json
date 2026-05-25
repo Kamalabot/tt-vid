@@ -16,5 +16,8 @@
   "license": "ISC",
   "dependencies": {
     "gsap": "^3.15.0"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1"
   }
 }

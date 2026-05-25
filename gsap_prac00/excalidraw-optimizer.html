@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Excalidraw SVG Optimizer for GSAP</title>
+  <!-- Modern Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Outfit:wght@300;400;500;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- GSAP CDN for Live Playback -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(17, 25, 40, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-primary: #6366f1; /* Indigo */
+      --accent-primary-hover: #4f46e5;
+      --accent-success: #10b981; /* Emerald */
+      --accent-success-hover: #059669;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --code-bg: #05070c;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      background-image: radial-gradient(circle at 50% 0%, #1e1e38 0%, #090d16 60%);
+      color: var(--text-main);
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      padding: 2.5rem 1.5rem;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    h1 {
+      font-family: 'Lilita One', sans-serif;
+      font-size: 3rem;
+      letter-spacing: 1px;
+      background: linear-gradient(to right, #818cf8, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 30px rgba(99, 102, 241, 0.2);
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      font-weight: 300;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      transition: border-color 0.3s;
+    }
+
+    .panel:hover {
+      border-color: rgba(99, 102, 241, 0.2);
+    }
+
+    .panel-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .panel-title span {
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--accent-primary);
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    textarea {
+      width: 100%;
+      height: 250px;
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1rem;
+      color: #34d399;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    textarea:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+    }
+
+    /* Configuration Panel Styles */
+    .config-group {
+      margin-top: 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem;
+      border-top: 1px dashed var(--card-border);
+      padding-top: 1.25rem;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    input[type="number"], input[type="text"] {
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 0.5rem;
+      color: var(--text-main);
+      font-family: inherit;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: var(--accent-primary);
+    }
+
+    /* Button styles */
+    .btn-row {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      flex: 1;
+      padding: 0.75rem 1.25rem;
+      border-radius: 10px;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      border: none;
+      transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background-color: var(--accent-primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--accent-primary-hover);
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-success {
+      background-color: var(--accent-success);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background-color: var(--accent-success-hover);
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-secondary {
+      background-color: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+    }
+
+    .btn-secondary:hover {
+      background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Tabs Component */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 1rem;
+      gap: 0.5rem;
+    }
+
+    .tab {
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-weight: 500;
+      font-size: 0.9rem;
+      border-bottom: 2px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .tab.active {
+      color: var(--accent-primary);
+      border-bottom-color: var(--accent-primary);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Output Previews */
+    .preview-container {
+      background: #000;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      min-height: 350px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .preview-container svg {
+      max-width: 100%;
+      max-height: 500px;
+      height: auto;
+    }
+
+    .code-wrapper {
+      position: relative;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.75rem;
+      border-radius: 6px;
+      z-index: 10;
+    }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      color: #99f6e4;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.8rem;
+      overflow-x: auto;
+      max-height: 400px;
+      white-space: pre-wrap;
+    }
+
+    /* Animation Controller styling */
+    .player-controls {
+      position: absolute;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(9, 13, 22, 0.85);
+      border: 1px solid var(--card-border);
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      display: flex;
+      gap: 0.75rem;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      align-items: center;
+    }
+
+    .player-controls span {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .player-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      padding: 0;
+      font-size: 0.8rem;
+      background: var(--accent-primary);
+      color: white;
+    }
+    
+    .player-btn:hover {
+      background: var(--accent-primary-hover);
+    }
+
+    /* Hidden File Input */
+    #file-input {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Excalidraw SVG Optimizer</h1>
+    <p>Prepare, group, and label Excalidraw SVGs automatically for GSAP and HyperFrames composition animations</p>
+  </header>
+
+  <div class="grid">
+    <!-- INPUT PANEL -->
+    <div class="panel">
+      <div class="panel-title">
+        Input SVG
+        <span>Raw Code</span>
+      </div>
+
+      <textarea id="svg-input" placeholder="Paste Excalidraw SVG code here or drag & drop the file..."></textarea>
+      
+      <div class="btn-row">
+        <button type="button" class="btn-secondary" onclick="document.getElementById('file-input').click()">
+          📂 Open File
+        </button>
+        <input type="file" id="file-input" accept=".svg" onchange="handleFile(this)">
+        <button type="button" class="btn-secondary" onclick="loadSample()">
+          💡 Load Sample
+        </button>
+      </div>
+
+      <div class="config-group">
+        <div class="field">
+          <label for="card-start">Card Default Start (s)</label>
+          <input type="number" id="card-start" value="0.5" step="0.1">
+        </div>
+        <div class="field">
+          <label for="card-duration">Card Default Duration (s)</label>
+          <input type="number" id="card-duration" value="4" step="0.1">
+        </div>
+        <div class="field">
+          <label for="arrow-start">Arrow Default Start (s)</label>
+          <input type="number" id="arrow-start" value="1.0" step="0.1">
+        </div>
+        <div class="field">
+          <label for="arrow-duration">Arrow Default Duration (s)</label>
+          <input type="number" id="arrow-duration" value="3.0" step="0.1">
+        </div>
+      </div>
+
+      <div class="btn-row" style="margin-top: 2rem;">
+        <button type="button" class="btn-primary" onclick="processSVG()">
+          ⚙️ Optimize & Format SVG
+        </button>
+      </div>
+    </div>
+
+    <!-- OUTPUT PANEL -->
+    <div class="panel" style="min-height: 500px;">
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab(event, 'tab-render')">👀 Live Preview</div>
+        <div class="tab" onclick="switchTab(event, 'tab-code')">📄 Clean SVG Code</div>
+        <div class="tab" onclick="switchTab(event, 'tab-gsap')">⚡ GSAP Timeline Code</div>
+      </div>
+
+      <!-- Live Render Tab -->
+      <div id="tab-render" class="tab-content active">
+        <div class="preview-container">
+          <div id="render-output" style="width: 100%; display: flex; align-items: center; justify-content: center;">
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Optimize an SVG to see it rendered here.</p>
+          </div>
+          
+          <div class="player-controls" id="play-controller" style="display: none;">
+            <span>Preview Motion:</span>
+            <button class="player-btn" onclick="playPreview()">▶</button>
+            <button class="player-btn" onclick="resetPreview()">↺</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clean SVG Code Tab -->
+      <div id="tab-code" class="tab-content">
+        <div class="code-wrapper">
+          <button class="btn-primary copy-btn" onclick="copyText('svg-output-code')">Copy</button>
+          <pre><code id="svg-output-code">Clean SVG markup will appear here.</code></pre>
+        </div>
+        <div class="btn-row" style="margin-top: 1rem;">
+          <button type="button" class="btn-success" id="download-btn" disabled onclick="downloadSVG()">
+            📥 Download Optimized SVG
+          </button>
+        </div>
+      </div>
+
+      <!-- GSAP Code Tab -->
+      <div id="tab-gsap" class="tab-content">
+        <div class="code-wrapper">
+          <button class="btn-primary copy-btn" onclick="copyText('gsap-output-code')">Copy</button>
+          <pre><code id="gsap-output-code">GSAP boilerplate script will appear here.</code></pre>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  let rawSampleSvg = '';
+  let optimizedSvgString = '';
+  let parsedCards = [];
+  let parsedArrows = [];
+
+  // Fetch sample from workspace file relative URL (which matches the local dev file agent_work00.svg)
+  async function loadSample() {
+    try {
+      const response = await fetch('./agent_work00.svg');
+      if (response.ok) {
+        const text = await response.text();
+        document.getElementById('svg-input').value = text;
+      } else {
+        alert("Could not load sample file directly. Please drag & drop or paste your SVG manually.");
+      }
+    } catch (e) {
+      // Fallback in case of CORS or local file issues
+      alert("Could not fetch the sample file. Please paste your SVG in the text area.");
+    }
+  }
+
+  function handleFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('svg-input').value = e.target.result;
+    };
+    reader.readAsText(file);
+  }
+
+  function switchTab(event, tabId) {
+    const tabs = document.querySelectorAll('.tab');
+    const contents = document.querySelectorAll('.tab-content');
+    
+    tabs.forEach(t => t.classList.remove('active'));
+    contents.forEach(c => c.classList.remove('active'));
+    
+    event.currentTarget.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+  }
+
+  function copyText(elementId) {
+    const code = document.getElementById(elementId).innerText;
+    navigator.clipboard.writeText(code).then(() => {
+      alert("Code copied to clipboard!");
+    });
+  }
+
+  function downloadSVG() {
+    if (!optimizedSvgString) return;
+    const blob = new Blob([optimizedSvgString], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'optimized_excalidraw.svg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function processSVG() {
+    const rawSvg = document.getElementById('svg-input').value.trim();
+    if (!rawSvg) {
+      alert("Please paste some SVG code first.");
+      return;
+    }
+
+    const startCardStart = parseFloat(document.getElementById('card-start').value) || 0.5;
+    const startCardDuration = parseFloat(document.getElementById('card-duration').value) || 4;
+    const startArrowStart = parseFloat(document.getElementById('arrow-start').value) || 1.0;
+    const startArrowDuration = parseFloat(document.getElementById('arrow-duration').value) || 3.0;
+
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(rawSvg, "image/svg+xml");
+      
+      const parserError = doc.querySelector("parsererror");
+      if (parserError) {
+        throw new Error(parserError.textContent);
+      }
+
+      const svg = doc.querySelector("svg");
+      if (!svg) {
+        throw new Error("No root <svg> element found.");
+      }
+
+      // Cleanup: Remove empty masks
+      doc.querySelectorAll("mask").forEach(mask => {
+        if (!mask.children.length && !mask.textContent.trim()) {
+          mask.remove();
+        }
+      });
+
+      const children = Array.from(svg.children);
+      const cardPairs = [];
+      const arrowGroups = [];
+      
+      parsedCards = [];
+      parsedArrows = [];
+
+      // Loop and detect pairs
+      for (let i = 0; i < children.length; i++) {
+        const el = children[i];
+        if (el.tagName.toLowerCase() === "g") {
+          const hasPaths = el.querySelector("path") !== null;
+          const hasText = el.querySelector("text") !== null;
+
+          // Box container + Text container pair
+          if (hasPaths && !hasText) {
+            const nextEl = children[i + 1];
+            if (nextEl && nextEl.tagName.toLowerCase() === "g" && nextEl.querySelector("text")) {
+              cardPairs.push({ boxG: el, textG: nextEl });
+              i++;
+              continue;
+            }
+          }
+
+          // Arrow container: no transform, has stroke-linecap="round", all children are <g>
+          const hasStrokeLinecap = el.getAttribute("stroke-linecap") === "round";
+          const hasTransform = el.hasAttribute("transform");
+          const hasChildGs = Array.from(el.children).every(c => c.tagName.toLowerCase() === "g");
+
+          if (hasStrokeLinecap && !hasTransform && hasChildGs && el.children.length > 0) {
+            arrowGroups.push(el);
+          }
+        }
+      }
+
+      // Process Cards
+      let cardCount = 0;
+      cardPairs.forEach(({ boxG, textG }) => {
+        cardCount++;
+        const textEls = Array.from(textG.querySelectorAll("text"));
+        const textStr = textEls.map(t => t.textContent.trim()).join(" ");
+        const slug = textStr
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "") || `box-${cardCount}`;
+
+        const cardId = `card-${slug}`;
+        parsedCards.push(cardId);
+
+        // Wrapping element
+        const wrapper = doc.createElementNS("http://www.w3.org/2000/svg", "g");
+        wrapper.setAttribute("id", cardId);
+        wrapper.setAttribute("class", "clip card-group");
+        wrapper.setAttribute("data-start", String(startCardStart));
+        wrapper.setAttribute("data-duration", String(startCardDuration));
+        wrapper.setAttribute("data-track-index", "0");
+
+        boxG.parentNode.insertBefore(wrapper, boxG);
+
+        boxG.setAttribute("class", "card-shape");
+        const paths = Array.from(boxG.querySelectorAll("path"));
+        paths.forEach(p => {
+          const fill = p.getAttribute("fill");
+          const stroke = p.getAttribute("stroke");
+          if (fill && fill !== "none" && (!stroke || stroke === "none")) {
+            p.setAttribute("class", "card-bg");
+          } else if (stroke && stroke !== "none") {
+            p.setAttribute("class", "card-border");
+          }
+        });
+
+        textG.setAttribute("class", "card-text");
+
+        wrapper.appendChild(boxG);
+        wrapper.appendChild(textG);
+      });
+
+      // Process Arrows
+      let arrowCount = 0;
+      arrowGroups.forEach((arrowG) => {
+        arrowCount++;
+        const arrowId = `arrow-${arrowCount}`;
+        parsedArrows.push(arrowId);
+
+        const wrapper = doc.createElementNS("http://www.w3.org/2000/svg", "g");
+        wrapper.setAttribute("id", arrowId);
+        wrapper.setAttribute("class", "clip arrow-group");
+        wrapper.setAttribute("data-start", String(startArrowStart));
+        wrapper.setAttribute("data-duration", String(startArrowDuration));
+        wrapper.setAttribute("data-track-index", "1");
+
+        arrowG.parentNode.insertBefore(wrapper, arrowG);
+
+        const arrowChildren = Array.from(arrowG.children);
+        arrowChildren.forEach((childG, index) => {
+          if (index === 0) {
+            childG.setAttribute("class", "arrow-shaft-group");
+            const p = childG.querySelector("path");
+            if (p) p.setAttribute("class", "arrow-shaft-path");
+          } else {
+            childG.setAttribute("class", `arrow-head-group arrow-head-${index}`);
+            const p = childG.querySelector("path");
+            if (p) p.setAttribute("class", "arrow-head-path");
+          }
+          wrapper.appendChild(childG);
+        });
+
+        arrowG.remove();
+      });
+
+      // Format SVG String
+      const serializer = new XMLSerializer();
+      optimizedSvgString = serializer.serializeToString(doc);
+
+      // Render visually
+      const renderOutput = document.getElementById('render-output');
+      renderOutput.innerHTML = optimizedSvgString;
+
+      // Update Code Areas
+      document.getElementById('svg-output-code').innerText = formatXml(optimizedSvgString);
+      document.getElementById('download-btn').disabled = false;
+      document.getElementById('play-controller').style.display = 'flex';
+
+      // Generate GSAP code
+      generateGSAPBoilerplate();
+
+    } catch (e) {
+      alert(`Error parsing SVG: ${e.message}`);
+      console.error(e);
+    }
+  }
+
+  function generateGSAPBoilerplate() {
+    let gsapCode = `// GSAP Timeline Registration for HyperFrames\n`;
+    gsapCode += `const tl = gsap.timeline({ paused: true });\n\n`;
+
+    gsapCode += `// 1. Initial State (Hide all elements)\n`;
+    gsapCode += `gsap.set([`;
+    const selectors = [...parsedCards, ...parsedArrows].map(id => `'#${id}'`).join(', ');
+    gsapCode += selectors;
+    gsapCode += `], { opacity: 0 });\n\n`;
+
+    gsapCode += `// 2. Animate Cards\n`;
+    parsedCards.forEach((id, index) => {
+      const time = 0.5 + index * 0.4;
+      gsapCode += `tl.fromTo('#${id}', \n`;
+      gsapCode += `  { opacity: 0, scale: 0.8, transformOrigin: '50% 50%' },\n`;
+      gsapCode += `  { opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.5)' },\n`;
+      gsapCode += `  ${time.toFixed(1)}\n`;
+      gsapCode += `);\n`;
+    });
+
+    gsapCode += `\n// 3. Animate Arrows (drawing borders)\n`;
+    parsedArrows.forEach((id, index) => {
+      const time = 1.0 + index * 0.5;
+      gsapCode += `tl.fromTo('#${id}', \n`;
+      gsapCode += `  { opacity: 0 },\n`;
+      gsapCode += `  { opacity: 1, duration: 0.3 },\n`;
+      gsapCode += `  ${time.toFixed(1)}\n`;
+      gsapCode += `);\n`;
+      // Draw shaft
+      gsapCode += `tl.fromTo('#${id} .arrow-shaft-path', \n`;
+      gsapCode += `  { strokeDasharray: 200, strokeDashoffset: 200 },\n`;
+      gsapCode += `  { strokeDashoffset: 0, duration: 0.8, ease: 'power2.out' },\n`;
+      gsapCode += `  ${time.toFixed(1)}\n`;
+      gsapCode += `);\n`;
+    });
+
+    gsapCode += `\n// Register on window for HyperFrames seeking\n`;
+    gsapCode += `window.__timelines = window.__timelines || {};\n`;
+    gsapCode += `window.__timelines["my-excalidraw-composition"] = tl;\n`;
+
+    document.getElementById('gsap-output-code').innerText = gsapCode;
+  }
+
+  // Pre-configured basic XML formatter
+  function formatXml(xml) {
+    let formatted = '';
+    let reg = /(>)(<)(\/*)/g;
+    xml = xml.replace(reg, '$1\r\n$2$3');
+    let pad = 0;
+    xml.split('\r\n').forEach((node) => {
+      let indent = 0;
+      if (node.match(/.+<\/\w[^>]*>$/)) {
+        indent = 0;
+      } else if (node.match(/^<\/\w/)) {
+        if (pad !== 0) {
+          pad -= 1;
+        }
+      } else if (node.match(/^<\w([^>]*[^\/])?>$/)) {
+        indent = 1;
+      } else {
+        indent = 0;
+      }
+
+      let padding = '';
+      for (let i = 0; i < pad; i++) {
+        padding += '  ';
+      }
+
+      formatted += padding + node + '\r\n';
+      pad += indent;
+    });
+
+    return formatted.trim();
+  }
+
+  // Live Playback Engine
+  let activeTimeline = null;
+
+  function playPreview() {
+    if (activeTimeline) {
+      activeTimeline.kill();
+    }
+
+    // Reset styles
+    resetPreview();
+
+    // Create a new timeline targeted to the rendered SVG elements
+    const tl = gsap.timeline();
+    
+    // Hide initially
+    const elements = [...parsedCards, ...parsedArrows].map(id => `#render-output #${id}`);
+    gsap.set(elements, { opacity: 0 });
+
+    // Animate Cards
+    parsedCards.forEach((id, index) => {
+      const time = 0.5 + index * 0.4;
+      tl.fromTo(`#render-output #${id}`, 
+        { opacity: 0, scale: 0.8, transformOrigin: '50% 50%' },
+        { opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.5)' },
+        time
+      );
+    });
+
+    // Animate Arrows (simple draw logic)
+    parsedArrows.forEach((id, index) => {
+      const time = 1.0 + index * 0.5;
+      tl.fromTo(`#render-output #${id}`, 
+        { opacity: 0 },
+        { opacity: 1, duration: 0.3 },
+        time
+      );
+
+      const shaftPath = document.querySelector(`#render-output #${id} .arrow-shaft-path`);
+      if (shaftPath) {
+        const length = shaftPath.getTotalLength ? shaftPath.getTotalLength() : 300;
+        gsap.set(shaftPath, { strokeDasharray: length, strokeDashoffset: length });
+        tl.to(shaftPath, { strokeDashoffset: 0, duration: 0.8, ease: 'power2.out' }, time);
+      }
+    });
+
+    activeTimeline = tl;
+    tl.play();
+  }
+
+  function resetPreview() {
+    if (activeTimeline) {
+      activeTimeline.kill();
+    }
+    // Remove inline GSAP styles to restore base SVG look
+    const elements = [...parsedCards, ...parsedArrows].map(id => `#render-output #${id}`);
+    gsap.set(elements, { clearProps: 'all' });
+    
+    document.querySelectorAll('#render-output .arrow-shaft-path').forEach(path => {
+      gsap.set(path, { clearProps: 'all' });
+    });
+  }
+
+  // Load sample automatically on boot
+  window.addEventListener('DOMContentLoaded', () => {
+    loadSample();
+  });
+</script>
+
+</body>
+</html>
